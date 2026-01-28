@@ -10,6 +10,7 @@ import { getDogBreed, DOG_BREEDS, isUnlocked } from '@/config/dogConfig';
 import { ShoppingCart, Zap, TrendingUp, Settings, Home, Gift, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { PoopAnimation } from '@/components/PoopAnimation';
+import { PoopIcon } from '@/components/PoopIcon';
 import { ComboDisplay, CriticalHit } from '@/components/ComboDisplay';
 import { ParticleEffect } from '@/components/ParticleEffect';
 
@@ -136,9 +137,27 @@ export default function GamePage() {
     const result = mergeDogs(dog1Id, dog2Id);
     if (result.success) {
       hapticFeedback.success();
-      toast.success('合成成功！', {
-        description: '获得了更高级的狗狗！',
-      });
+      
+      // 获取合成后的狗狗信息
+      const mergedDog = gameState.dogs.find(d => d.id === dog1Id);
+      if (mergedDog) {
+        const breed = getDogBreed(mergedDog.level);
+        
+        // 检查是否是首次解锁这个等级
+        const hasOtherSameLevel = gameState.dogs.filter(d => d.id !== dog1Id && d.level === mergedDog.level).length > 0;
+        
+        if (!hasOtherSameLevel) {
+          // 首次解锁，显示特殊提示
+          toast.success('🎉 恭喜解锁新狗狗！', {
+            description: `您解锁了 ${breed.name}！\n${breed.description}`,
+            duration: 5000,
+          });
+        } else {
+          toast.success('合成成功！', {
+            description: `获得了 ${breed.name}`,
+          });
+        }
+      }
     }
   };
 
@@ -181,7 +200,20 @@ export default function GamePage() {
   const energyPercent = (energy / maxEnergy) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div 
+      className="min-h-screen flex flex-col relative"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        touchAction: 'none',
+      }}
+    >
       {/* 顶部状态栏 - 升级版卡通风格 */}
       <div className="relative z-20 p-3 sm:p-4 overflow-hidden" style={{
         background: 'linear-gradient(135deg, #FF6B9D 0%, #C06C84 50%, #6C5B7B 100%)',
@@ -202,7 +234,9 @@ export default function GamePage() {
               boxShadow: '0 4px 8px rgba(255,165,0,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
             }}>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 group-hover:animate-shimmer"></div>
-              <span className="text-3xl animate-bounce" data-coin-icon style={{ animationDuration: '2s' }}>💩</span>
+              <div data-coin-icon className="animate-bounce" style={{ animationDuration: '2s' }}>
+                <PoopIcon size={36} />
+              </div>
               <div className="flex flex-col relative z-10">
                 <span className="text-xs font-bold text-orange-900">便便余额</span>
                 <span className="text-lg font-black text-orange-950">{Math.floor(gameState.coins).toLocaleString()}</span>

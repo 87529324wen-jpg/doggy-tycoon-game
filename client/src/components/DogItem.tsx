@@ -39,11 +39,11 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         let newX = prev.x + deltaX;
         let newY = prev.y + deltaY;
         
-        // 草地范围限制：顶部留出状态栏空间(15%)，底部留出导航栏空间(10%)
-        const minY = 0.15; // 顶部15%是状态栏
-        const maxY = 0.85; // 底部15%是导航栏和草地边缘
-        const minX = 0.05; // 左右各留5%边距
-        const maxX = 0.95;
+        // 草地范围限制：只能在草地上活动，不能到围栏上方
+        const minY = 0.25; // 顶部25%是状态栏+围栏
+        const maxY = 0.82; // 底部18%是导航栏
+        const minX = 0.08; // 左右各留8%边距（围栏内）
+        const maxX = 0.92;
         
         // 限制在草地范围内
         newX = Math.max(minX, Math.min(maxX, newX));
@@ -108,11 +108,11 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     const newX = (e.clientX - rect.left - dragOffset.current.x) / rect.width;
     const newY = (e.clientY - rect.top - dragOffset.current.y) / rect.height;
     
-    // 草地范围限制
-    const minY = 0.15; // 顶部15%是状态栏
-    const maxY = 0.85; // 底部15%是导航栏
-    const minX = 0.05;
-    const maxX = 0.95;
+    // 草地范围限制：只能在草地上活动，不能到围栏上方
+    const minY = 0.25; // 顶部25%是状态栏+围栏
+    const maxY = 0.82; // 底部18%是导航栏
+    const minX = 0.08; // 左右各留8%边距（围栏内）
+    const maxX = 0.92;
     
     const clampedX = Math.max(minX, Math.min(maxX, newX));
     const clampedY = Math.max(minY, Math.min(maxY, newY));
