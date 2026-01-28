@@ -9,6 +9,9 @@ import { Progress } from '@/components/ui/progress';
 import { getDogBreed, DOG_BREEDS, isUnlocked } from '@/config/dogConfig';
 import { ShoppingCart, Zap, TrendingUp, Settings, Home, Gift, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
+import { PoopAnimation } from '@/components/PoopAnimation';
+import { ComboDisplay, CriticalHit } from '@/components/ComboDisplay';
+import { ParticleEffect } from '@/components/ParticleEffect';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -16,6 +19,12 @@ export default function GamePage() {
   const [energy, setEnergy] = useState(100);
   const [maxEnergy] = useState(100);
   const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [poopAnimations, setPoopAnimations] = useState<Array<{ id: number; x: number; y: number; amount: number; isCritical?: boolean; multiplier?: number }>>([]);
+  const [combo, setCombo] = useState(0);
+  const [comboPosition, setComboPosition] = useState({ x: 0, y: 0 });
+  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [criticalHits, setCriticalHits] = useState<Array<{ id: number; x: number; y: number; multiplier: number }>>([]);
+  const comboTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { hapticFeedback } = useTelegram();
   const {
     gameState,
@@ -50,21 +59,68 @@ export default function GamePage() {
     const dog = gameState.dogs.find((d) => d.id === dogId);
     if (dog) {
       const breed = getDogBreed(dog.level);
-      const coinAmount = breed.baseProduction;
+      let coinAmount = breed.baseProduction;
+      
+      // 连击系统
+      setCombo((prev) => prev + 1);
+      setComboPosition({ x: window.innerWidth / 2, y: window.innerHeight / 3 });
+      
+      // 清除之前的计时器
+      if (comboTimerRef.current) {
+        clearTimeout(comboTimerRef.current);
+      }
+      
+      // 2秒后重置连击
+      comboTimerRef.current = setTimeout(() => {
+        setCombo(0);
+      }, 2000);
+      
+      // 暴击系统（10%概率）
+      const isCritical = Math.random() < 0.1;
+      let multiplier = 1;
+      
+      if (isCritical) {
+        multiplier = 2 + Math.floor(Math.random() * 4); // 2-5倍
+        coinAmount *= multiplier;
+        
+        // 显示暴击特效
+        const critId = Date.now() + Math.random();
+        setCriticalHits((prev) => [...prev, { id: critId, x, y, multiplier }]);
+        
+        // 更强的震动
+        hapticFeedback.heavy();
+      } else {
+        hapticFeedback.light();
+      }
+      
+      // 连击奖励：每5连击额外+50%
+      if (combo > 0 && combo % 5 === 0) {
+        coinAmount = Math.floor(coinAmount * 1.5);
+      }
       
       // 添加金币到游戏状态
       addCoins(coinAmount);
       
-      // 显示飘字动画
-      const floatingId = Date.now() + Math.random();
-      setFloatingCoins((prev) => [...prev, { id: floatingId, x, y }]);
-      setTimeout(() => {
-        setFloatingCoins((prev) => prev.filter((c) => c.id !== floatingId));
-      }, 1000);
-
-      // 触觉反馈
-      hapticFeedback.light();
+      // 显示屎掉落动画
+      const poopId = Date.now() + Math.random();
+      setPoopAnimations((prev) => [...prev, { id: poopId, x, y, amount: coinAmount, isCritical, multiplier }]);
+      
+      // 粒子特效
+      const particleId = Date.now() + Math.random();
+      setParticles((prev) => [...prev, { id: particleId, x, y }]);
     }
+  };
+
+  const handlePoopAnimationComplete = (id: number) => {
+    setPoopAnimations((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handleParticleComplete = (id: number) => {
+    setParticles((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handleCriticalHitComplete = (id: number) => {
+    setCriticalHits((prev) => prev.filter((c) => c.id !== id));
   };
 
   const handleDragStart = (dogId: string) => {
@@ -296,20 +352,41 @@ export default function GamePage() {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        {/* 飘字动画 */}
-        {floatingCoins.map((coin) => (
-          <div
-            key={coin.id}
-            className="absolute pointer-events-none text-yellow-500 font-bold text-xl animate-float-up"
-            style={{
-              left: coin.x,
-              top: coin.y,
-              animation: 'float-up 1s ease-out forwards',
-            }}
-          >
-            +1💩
-          </div>
+        {/* 屎掉落动画 */}
+        {poopAnimations.map((poop) => (
+          <PoopAnimation
+            key={poop.id}
+            id={poop.id}
+            startX={poop.x}
+            startY={poop.y}
+            amount={poop.amount}
+            onComplete={() => handlePoopAnimationComplete(poop.id)}
+          />
         ))}
+
+        {/* 粒子特效 */}
+        {particles.map((particle) => (
+          <ParticleEffect
+            key={particle.id}
+            x={particle.x}
+            y={particle.y}
+            onComplete={() => handleParticleComplete(particle.id)}
+          />
+        ))}
+
+        {/* 暴击特效 */}
+        {criticalHits.map((crit) => (
+          <CriticalHit
+            key={crit.id}
+            x={crit.x}
+            y={crit.y}
+            multiplier={crit.multiplier}
+            onComplete={() => handleCriticalHitComplete(crit.id)}
+          />
+        ))}
+
+        {/* 连击显示 */}
+        <ComboDisplay combo={combo} x={comboPosition.x} y={comboPosition.y} />
 
         {/* 狗狗 */}
         {gameState.dogs.map((dog) => (

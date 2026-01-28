@@ -25,6 +25,40 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     }
   }, [dog.x, dog.y, isDragging]);
 
+  // 狗狗自动溜达
+  useEffect(() => {
+    if (isDragging) return;
+
+    const walkInterval = setInterval(() => {
+      setPosition((prev) => {
+        // 随机移动方向和距离
+        const deltaX = (Math.random() - 0.5) * 0.05; // -2.5% 到 +2.5%
+        const deltaY = (Math.random() - 0.5) * 0.05;
+        
+        // 计算新位置
+        let newX = prev.x + deltaX;
+        let newY = prev.y + deltaY;
+        
+        // 草地范围限制：顶部留出状态栏空间(15%)，底部留出导航栏空间(10%)
+        const minY = 0.15; // 顶部15%是状态栏
+        const maxY = 0.85; // 底部15%是导航栏和草地边缘
+        const minX = 0.05; // 左右各留5%边距
+        const maxX = 0.95;
+        
+        // 限制在草地范围内
+        newX = Math.max(minX, Math.min(maxX, newX));
+        newY = Math.max(minY, Math.min(maxY, newY));
+        
+        // 更新外部状态
+        onDragEnd(dog.id, newX, newY);
+        
+        return { x: newX, y: newY };
+      });
+    }, 3000 + Math.random() * 2000); // 每3-5秒移动一次
+
+    return () => clearInterval(walkInterval);
+  }, [isDragging, dog.id, onDragEnd]);
+
   const startTimeRef = useRef<number>(0);
   const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -68,9 +102,14 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     const newX = (e.clientX - rect.left - dragOffset.current.x) / rect.width;
     const newY = (e.clientY - rect.top - dragOffset.current.y) / rect.height;
     
-    // 限制在容器内
-    const clampedX = Math.max(0.05, Math.min(0.95, newX));
-    const clampedY = Math.max(0.05, Math.min(0.95, newY));
+    // 草地范围限制
+    const minY = 0.15; // 顶部15%是状态栏
+    const maxY = 0.85; // 底部15%是导航栏
+    const minX = 0.05;
+    const maxX = 0.95;
+    
+    const clampedX = Math.max(minX, Math.min(maxX, newX));
+    const clampedY = Math.max(minY, Math.min(maxY, newY));
     
     setPosition({ x: clampedX, y: clampedY });
   };
@@ -125,10 +164,22 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     onDragEnd(dog.id, position.x, position.y);
   };
 
+  // 点击动画状态
+  const [isClicked, setIsClicked] = useState(false);
+
+  const handleClick = () => {
+    if (!isDragging && onClick) {
+      setIsClicked(true);
+      setTimeout(() => setIsClicked(false), 300);
+    }
+  };
+
   return (
     <div
       data-dog-id={dog.id}
-      className={`absolute cursor-move transition-transform ${isDragging ? 'scale-110 z-50' : 'z-10'}`}
+      className={`absolute cursor-move transition-transform ${
+        isDragging ? 'scale-110 z-50' : isClicked ? 'scale-95 z-10' : 'z-10'
+      }`}
       style={{
         left: `${position.x * 100}%`,
         top: `${position.y * 100}%`,
@@ -139,7 +190,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      <div className="relative">
+      <div className="relative" onClick={handleClick}>
         <img
           src={breed.image}
           alt={breed.name}
