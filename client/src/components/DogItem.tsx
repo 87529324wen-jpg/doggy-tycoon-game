@@ -31,6 +31,8 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     if (isDragging) return;
 
     const walkInterval = setInterval(() => {
+      setIsWalking(true);
+      setTimeout(() => setIsWalking(false), 700); // 走路动画持续0.7秒
       setPosition((prev) => {
         // 根据当前方向移动
         const moveDistance = 0.015 + Math.random() * 0.01; // 1.5%-2.5% 的移动距离，更小更频繁
@@ -201,6 +203,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
 
   // 点击动画状态
   const [isClicked, setIsClicked] = useState(false);
+  const [isWalking, setIsWalking] = useState(false);
 
   const handleClick = () => {
     if (!isDragging && onClick) {
@@ -232,11 +235,8 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         <img
           src={breed.image}
           alt={breed.name}
-          className="w-24 h-24 sm:w-28 sm:h-28 object-contain pointer-events-none select-none animate-wiggle"
+          className={`w-24 h-24 sm:w-28 sm:h-28 object-contain pointer-events-none select-none ${isWalking ? 'dog-walking' : ''}`}
           draggable={false}
-          style={{
-            animation: 'wiggle 3s ease-in-out infinite',
-          }}
         />
         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
           Lv.{dog.level}
