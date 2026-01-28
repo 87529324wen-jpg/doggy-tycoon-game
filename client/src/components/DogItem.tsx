@@ -125,7 +125,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     >
       <div className="relative">
         <img
-          src={`/images/dogs/dog-${dog.level}.png`}
+          src={breed.image}
           alt={breed.name}
           className="w-16 h-16 sm:w-20 sm:h-20 object-contain pointer-events-none select-none"
           draggable={false}

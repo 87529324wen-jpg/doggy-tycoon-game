@@ -179,7 +179,7 @@ export default function GamePage() {
                           }`}
                         >
                           <img
-                            src={`/images/dogs/dog-${breed.level}.png`}
+                            src={breed.image}
                             alt={breed.name}
                             className="w-16 h-16 object-contain"
                           />
