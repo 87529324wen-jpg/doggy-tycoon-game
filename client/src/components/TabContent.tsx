@@ -55,8 +55,8 @@ export function TabContent({ activeTab, gameState, onClaimTask, onToggleAutoMerg
     }));
 
     return (
-      <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
-        <ScrollArea className="h-[50vh] pr-4">
+      <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 h-full flex flex-col">
+        <ScrollArea className="flex-1 px-4 py-4">
           <div className="space-y-6">
             {/* 每日任务 */}
             <div>

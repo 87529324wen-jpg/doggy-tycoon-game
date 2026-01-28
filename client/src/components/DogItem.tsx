@@ -252,7 +252,12 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
             transition: 'none',
           }}
         />
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+        <div 
+          className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap"
+          style={{
+            transform: direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
+          }}
+        >
           Lv.{dog.level}
         </div>
       </div>

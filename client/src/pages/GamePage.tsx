@@ -707,7 +707,7 @@ export default function GamePage() {
                   <span className="text-xs font-bold drop-shadow-lg">任务</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[65vh]">
+              <DialogContent className="max-w-md max-h-[60vh] overflow-hidden p-0">
                 <TabContent 
                   activeTab="tasks" 
                   gameState={gameState} 

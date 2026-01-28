@@ -206,9 +206,9 @@ export function useGameState() {
       return { success: false, message: '狗狗数量已达上限' };
     }
 
-    // 随机位置，确保在草地区域（下半部分）
-    const x = Math.random() * 0.6 + 0.2; // 20%-80%
-    const y = Math.random() * 0.25 + 0.55; // 55%-80%，确保在屏幕下半部分
+    // 随机位置，确保在草地区域且分散
+    const x = Math.random() * 0.7 + 0.15; // 15%-85%，更大范围
+    const y = Math.random() * 0.2 + 0.58; // 58%-78%，草地区域
 
     setGameState(prev => {
       const newDogs = [
