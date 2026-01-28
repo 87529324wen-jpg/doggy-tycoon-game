@@ -126,12 +126,20 @@ export default function GamePage() {
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      {/* 顶部状态栏 */}
-      <div className="bg-white/95 backdrop-blur shadow-md p-3 sm:p-4 relative z-20">
+      {/* 顶部状态栏 - 卡通木板风格 */}
+      <div className="relative z-20 p-3 sm:p-4" style={{
+        background: 'linear-gradient(180deg, #8B4513 0%, #A0522D 50%, #8B4513 100%)',
+        borderBottom: '4px solid #654321',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.2)',
+      }}>
         <div className="container max-w-4xl">
           <div className="flex items-center justify-between gap-2 sm:gap-4 mb-2">
             {/* 金币 */}
-            <div className="flex items-center gap-2 bg-amber-100 px-3 py-2 rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
+              background: 'linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 100%)',
+              border: '2px solid #D2691E',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}>
               <span className="text-2xl">💩</span>
               <div className="flex flex-col">
                 <span className="text-xs text-amber-700">便便余额</span>
@@ -140,7 +148,11 @@ export default function GamePage() {
             </div>
 
             {/* 产出 */}
-            <div className="flex items-center gap-2 bg-green-100 px-3 py-2 rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
+              background: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)',
+              border: '2px solid #4CAF50',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}>
               <TrendingUp className="w-5 h-5 text-green-600" />
               <div className="flex flex-col">
                 <span className="text-xs text-green-700">每秒</span>
@@ -149,7 +161,11 @@ export default function GamePage() {
             </div>
 
             {/* 容量 */}
-            <div className="flex items-center gap-2 bg-blue-100 px-3 py-2 rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
+              background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)',
+              border: '2px solid #2196F3',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}>
               <span className="text-sm">🐕 {gameState.dogs.length}/{gameState.maxDogs}</span>
             </div>
           </div>
@@ -174,13 +190,17 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* 左侧按钮栏 */}
+      {/* 左侧按钮栏 - 木质按钮风格 */}
       <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 space-y-2">
         <Dialog open={shopOpen} onOpenChange={setShopOpen}>
           <DialogTrigger asChild>
-            <Button className="w-12 h-12 rounded-full bg-purple-500 hover:bg-purple-600 shadow-lg p-0">
+            <button className="w-12 h-12 rounded-full shadow-lg p-0 flex items-center justify-center text-white transition-transform hover:scale-110" style={{
+              background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+              border: '3px solid #6A1B9A',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3)',
+            }}>
               <ShoppingCart className="w-5 h-5" />
-            </Button>
+            </button>
           </DialogTrigger>
           <DialogContent className="max-w-md max-h-[80vh]">
             <DialogHeader>
@@ -240,17 +260,29 @@ export default function GamePage() {
           </DialogContent>
         </Dialog>
 
-        <Button className="w-12 h-12 rounded-full bg-yellow-500 hover:bg-yellow-600 shadow-lg p-0">
+        <button className="w-12 h-12 rounded-full shadow-lg p-0 flex items-center justify-center text-white transition-transform hover:scale-110" style={{
+          background: 'linear-gradient(135deg, #FFC107 0%, #FFA000 100%)',
+          border: '3px solid #FF8F00',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3)',
+        }}>
           <Trophy className="w-5 h-5" />
-        </Button>
+        </button>
 
-        <Button className="w-12 h-12 rounded-full bg-pink-500 hover:bg-pink-600 shadow-lg p-0">
+        <button className="w-12 h-12 rounded-full shadow-lg p-0 flex items-center justify-center text-white transition-transform hover:scale-110" style={{
+          background: 'linear-gradient(135deg, #E91E63 0%, #C2185B 100%)',
+          border: '3px solid #AD1457',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3)',
+        }}>
           <Gift className="w-5 h-5" />
-        </Button>
+        </button>
 
-        <Button className="w-12 h-12 rounded-full bg-gray-500 hover:bg-gray-600 shadow-lg p-0">
+        <button className="w-12 h-12 rounded-full shadow-lg p-0 flex items-center justify-center text-white transition-transform hover:scale-110" style={{
+          background: 'linear-gradient(135deg, #757575 0%, #616161 100%)',
+          border: '3px solid #424242',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3)',
+        }}>
           <Settings className="w-5 h-5" />
-        </Button>
+        </button>
       </div>
 
       {/* 游戏区域 - 后院背景 */}
@@ -304,33 +336,39 @@ export default function GamePage() {
         )}
       </div>
 
-      {/* 底部导航栏 */}
-      <div className="bg-white/95 backdrop-blur shadow-lg p-3 relative z-20">
+      {/* 底部导航栏 - 草地风格 */}
+      <div className="relative z-20 p-3" style={{
+        background: 'linear-gradient(180deg, #7CB342 0%, #558B2F 50%, #33691E 100%)',
+        borderTop: '3px solid #9CCC65',
+        boxShadow: '0 -4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1)',
+      }}>
         <div className="container max-w-4xl">
           <div className="grid grid-cols-5 gap-2">
-            <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2">
+            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
               <Home className="w-5 h-5" />
-              <span className="text-xs">首页</span>
-            </Button>
-            <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2">
+              <span className="text-xs font-semibold">首页</span>
+            </button>
+            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
               <TrendingUp className="w-5 h-5" />
-              <span className="text-xs">升级</span>
-            </Button>
-            <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2">
+              <span className="text-xs font-semibold">升级</span>
+            </button>
+            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
               <ShoppingCart className="w-5 h-5" />
-              <span className="text-xs">商店</span>
-            </Button>
-            <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2">
+              <span className="text-xs font-semibold">商店</span>
+            </button>
+            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
               <span className="text-lg">👥</span>
-              <span className="text-xs">好友</span>
-            </Button>
-            <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 relative">
+              <span className="text-xs font-semibold">好友</span>
+            </button>
+            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white relative">
               <span className="text-lg">📋</span>
-              <span className="text-xs">任务</span>
-              <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="text-xs font-semibold">任务</span>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style={{
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              }}>
                 3
               </span>
-            </Button>
+            </button>
           </div>
         </div>
       </div>
