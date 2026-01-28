@@ -1,4 +1,4 @@
-// Build: 1769603015
+// Build: 1769603222
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useTelegram } from '@/hooks/useTelegram';
@@ -289,6 +289,10 @@ export default function GamePage() {
           <div className="absolute bottom-0 right-0 w-40 h-40 bg-yellow-300 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
         <div className="container max-w-4xl">
+          {/* 版本号显示 */}
+          <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 rounded text-white text-xs font-mono z-30">
+            {GAME_VERSION}
+          </div>
           <div className="flex items-center justify-between gap-2 sm:gap-4 mb-2">
             {/* 金币 */}
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl relative overflow-hidden group" style={{
