@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DOG_BREEDS, getDogBreed, canMerge, getMergedLevel } from '@/config/dogConfig';
+import { loadGame, saveGame as saveGameApi } from '@/lib/gameApi';
+import { useTelegram } from './useTelegram';
 
 export interface Dog {
   id: string;
@@ -26,47 +28,112 @@ const EXP_PER_MERGE = 10; // 每次合成获得的经验
 const EXP_PER_LEVEL = 100; // 每级需要的经验
 
 export function useGameState() {
-  const [gameState, setGameState] = useState<GameState>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved game state', e);
-      }
-    }
-    return {
-      coins: 100,
-      dogs: [],
-      maxDogs: 6,
-      userLevel: 1,
-      userExp: 0,
-      autoMergeEnabled: false,
-      lastSaveTime: Date.now(),
-    };
+  const { user } = useTelegram();
+  const [isLoading, setIsLoading] = useState(true);
+  const [gameState, setGameState] = useState<GameState>({
+    coins: 100,
+    dogs: [],
+    maxDogs: 6,
+    userLevel: 1,
+    userExp: 0,
+    autoMergeEnabled: false,
+    lastSaveTime: Date.now(),
   });
 
   const productionIntervalRef = useRef<number | undefined>(undefined);
   const autoSaveIntervalRef = useRef<number | undefined>(undefined);
+  const lastCloudSaveRef = useRef<number>(Date.now());
 
-  // 保存游戏状态
-  const saveGame = useCallback(() => {
+  // 从云端加载游戏数据
+  useEffect(() => {
+    async function loadFromCloud() {
+      if (!user?.id) {
+        // 没有 Telegram 用户信息，从 localStorage 加载
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          try {
+            setGameState(JSON.parse(saved));
+          } catch (e) {
+            console.error('Failed to parse saved game state', e);
+          }
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await loadGame(user.id);
+        if (response.success) {
+          setGameState({
+            ...response.data,
+            autoMergeEnabled: false,
+            lastSaveTime: Date.now(),
+          });
+          console.log('✅ Game loaded from cloud');
+        }
+      } catch (error) {
+        console.error('Failed to load from cloud, using localStorage', error);
+        // 云端加载失败，尝试从 localStorage 加载
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          try {
+            setGameState(JSON.parse(saved));
+          } catch (e) {
+            console.error('Failed to parse saved game state', e);
+          }
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadFromCloud();
+  }, [user?.id]);
+
+  // 保存游戏状态（本地 + 云端）
+  const saveGame = useCallback(async () => {
     const stateToSave = {
       ...gameState,
       lastSaveTime: Date.now(),
     };
+    
+    // 保存到 localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [gameState]);
+
+    // 保存到云端（限制频率，避免过于频繁）
+    const now = Date.now();
+    if (user?.id && now - lastCloudSaveRef.current > 3000) {
+      lastCloudSaveRef.current = now;
+      try {
+        await saveGameApi({
+          telegramId: user.id,
+          username: user.username || user.first_name,
+          gameState: {
+            coins: gameState.coins,
+            dogs: gameState.dogs,
+            maxDogs: gameState.maxDogs,
+            userLevel: gameState.userLevel,
+            userExp: gameState.userExp,
+          },
+        });
+        console.log('✅ Game saved to cloud');
+      } catch (error) {
+        console.error('Failed to save to cloud', error);
+      }
+    }
+  }, [gameState, user]);
 
   // 自动保存
   useEffect(() => {
+    if (isLoading) return;
+    
     autoSaveIntervalRef.current = window.setInterval(saveGame, AUTO_SAVE_INTERVAL);
     return () => {
       if (autoSaveIntervalRef.current) {
         clearInterval(autoSaveIntervalRef.current);
       }
     };
-  }, [saveGame]);
+  }, [saveGame, isLoading]);
 
   // 计算总产出
   const calculateProduction = useCallback(() => {
@@ -78,6 +145,8 @@ export function useGameState() {
 
   // 自动产出
   useEffect(() => {
+    if (isLoading) return;
+    
     productionIntervalRef.current = window.setInterval(() => {
       const production = calculateProduction();
       if (production > 0) {
@@ -93,7 +162,7 @@ export function useGameState() {
         clearInterval(productionIntervalRef.current);
       }
     };
-  }, [calculateProduction]);
+  }, [calculateProduction, isLoading]);
 
   // 添加经验并升级
   const addExp = useCallback((exp: number) => {
@@ -306,6 +375,7 @@ export function useGameState() {
 
   return {
     gameState,
+    isLoading,
     buyDog,
     expandCapacity,
     updateDogPosition,

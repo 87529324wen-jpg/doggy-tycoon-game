@@ -182,72 +182,88 @@ export default function GamePage() {
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      {/* 顶部状态栏 - 卡通木板风格 */}
-      <div className="relative z-20 p-3 sm:p-4" style={{
-        background: 'linear-gradient(180deg, #8B4513 0%, #A0522D 50%, #8B4513 100%)',
-        borderBottom: '4px solid #654321',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.2)',
+      {/* 顶部状态栏 - 升级版卡通风格 */}
+      <div className="relative z-20 p-3 sm:p-4 overflow-hidden" style={{
+        background: 'linear-gradient(135deg, #FF6B9D 0%, #C06C84 50%, #6C5B7B 100%)',
+        borderBottom: '4px solid #355C7D',
+        boxShadow: '0 6px 12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.3)',
       }}>
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-40 h-40 bg-yellow-300 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
         <div className="container max-w-4xl">
           <div className="flex items-center justify-between gap-2 sm:gap-4 mb-2">
             {/* 金币 */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
-              background: 'linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 100%)',
-              border: '2px solid #D2691E',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl relative overflow-hidden group" style={{
+              background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+              border: '3px solid #FF8C00',
+              boxShadow: '0 4px 8px rgba(255,165,0,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
             }}>
-              <span className="text-2xl">💩</span>
-              <div className="flex flex-col">
-                <span className="text-xs text-amber-700">便便余额</span>
-                <span className="font-bold text-amber-900">{Math.floor(gameState.coins).toLocaleString()}</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 group-hover:animate-shimmer"></div>
+              <span className="text-3xl animate-bounce" style={{ animationDuration: '2s' }}>💩</span>
+              <div className="flex flex-col relative z-10">
+                <span className="text-xs font-bold text-orange-900">便便余额</span>
+                <span className="text-lg font-black text-orange-950">{Math.floor(gameState.coins).toLocaleString()}</span>
               </div>
             </div>
 
             {/* 产出 */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
-              background: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)',
-              border: '2px solid #4CAF50',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{
+              background: 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
+              border: '3px solid #2E8B57',
+              boxShadow: '0 4px 8px rgba(46,139,87,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
             }}>
-              <TrendingUp className="w-5 h-5 text-green-600" />
+              <TrendingUp className="w-6 h-6 text-white animate-pulse" />
               <div className="flex flex-col">
-                <span className="text-xs text-green-700">每秒</span>
-                <span className="font-bold text-green-900">+{production.toLocaleString()}</span>
+                <span className="text-xs font-bold text-teal-100">每秒</span>
+                <span className="text-lg font-black text-white">+{production.toLocaleString()}</span>
               </div>
             </div>
 
             {/* 容量 */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
-              background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)',
-              border: '2px solid #2196F3',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              border: '3px solid #5a67d8',
+              boxShadow: '0 4px 8px rgba(102,126,234,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
             }}>
-              <span className="text-sm">🐕 {gameState.dogs.length}/{gameState.maxDogs}</span>
+              <span className="text-lg font-black text-white">🐕 {gameState.dogs.length}/{gameState.maxDogs}</span>
             </div>
           </div>
 
           {/* 能量条 */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-blue-600">⚡ {energy}/{maxEnergy}</span>
-            <div className="flex-1">
-              <Progress value={energyPercent} className="h-2 bg-blue-200" />
+          <div className="flex items-center gap-2 relative z-10">
+            <span className="text-sm font-bold text-white drop-shadow-lg">⚡ {energy}/{maxEnergy}</span>
+            <div className="flex-1 bg-white/30 rounded-full h-3 overflow-hidden backdrop-blur-sm border-2 border-white/50">
+              <div 
+                className="h-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 transition-all duration-300 relative overflow-hidden"
+                style={{ width: `${energyPercent}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-shimmer"></div>
+              </div>
             </div>
-            <span className="text-xs text-gray-500">{energyPercent.toFixed(0)}%</span>
+            <span className="text-xs font-bold text-white drop-shadow-lg">{energyPercent.toFixed(0)}%</span>
           </div>
 
           {/* 等级进度 */}
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-sm font-semibold text-gray-700">Lv.{gameState.userLevel}</span>
-            <div className="flex-1">
-              <Progress value={expProgress} className="h-2" />
+          <div className="flex items-center gap-2 mt-2 relative z-10">
+            <span className="text-sm font-bold text-white drop-shadow-lg bg-purple-600 px-3 py-1 rounded-full border-2 border-white/50">Lv.{gameState.userLevel}</span>
+            <div className="flex-1 bg-white/30 rounded-full h-3 overflow-hidden backdrop-blur-sm border-2 border-white/50">
+              <div 
+                className="h-full bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 transition-all duration-300 relative overflow-hidden"
+                style={{ width: `${expProgress}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-shimmer"></div>
+              </div>
             </div>
-            <span className="text-xs text-gray-500">{gameState.userExp}/100</span>
+            <span className="text-xs font-bold text-white drop-shadow-lg">{gameState.userExp}/100</span>
           </div>
         </div>
       </div>
 
-      {/* 左侧按钮栏 - 木质按钮风格 */}
-      <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 space-y-2">
+      {/* 左侧按钮栏已移除，功能整合到底部导航栏 */}
+      <div className="hidden">
         <Dialog open={shopOpen} onOpenChange={setShopOpen}>
           <DialogTrigger asChild>
             <button className="w-12 h-12 rounded-full shadow-lg p-0 flex items-center justify-center text-white transition-transform hover:scale-110" style={{
@@ -413,38 +429,112 @@ export default function GamePage() {
         )}
       </div>
 
-      {/* 底部导航栏 - 草地风格 */}
-      <div className="relative z-20 p-3" style={{
-        background: 'linear-gradient(180deg, #7CB342 0%, #558B2F 50%, #33691E 100%)',
-        borderTop: '3px solid #9CCC65',
-        boxShadow: '0 -4px 8px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1)',
+      {/* 底部导航栏 - 升级版卡通风格 */}
+      <div className="relative z-20 p-3 overflow-hidden" style={{
+        background: 'linear-gradient(180deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        borderTop: '4px solid #5a67d8',
+        boxShadow: '0 -6px 12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.3)',
       }}>
-        <div className="container max-w-4xl">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-1/4 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-0 right-1/4 w-40 h-40 bg-pink-300 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+        <div className="container max-w-4xl relative z-10">
           <div className="grid grid-cols-5 gap-2">
-            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
-              <Home className="w-5 h-5" />
-              <span className="text-xs font-semibold">首页</span>
+            <Dialog open={shopOpen} onOpenChange={setShopOpen}>
+              <DialogTrigger asChild>
+                <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg">
+                  <div className="relative">
+                    <ShoppingCart className="w-6 h-6" />
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+                  </div>
+                  <span className="text-xs font-bold drop-shadow-lg">商店</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[80vh]">
+                <DialogHeader>
+                  <DialogTitle>🏪 商店</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="h-[60vh] pr-4">
+                  <div className="space-y-3">
+                    {DOG_BREEDS.map((breed) => {
+                      const unlocked = isUnlocked(breed.level, gameState.userLevel);
+                      const canAfford = gameState.coins >= breed.purchasePrice;
+                      const canBuy = unlocked && canAfford && gameState.dogs.length < gameState.maxDogs;
+
+                      return (
+                        <div
+                          key={breed.id}
+                          className={`flex items-center gap-3 p-3 rounded-lg border-2 ${
+                            unlocked ? 'bg-white border-amber-200' : 'bg-gray-100 border-gray-200 opacity-60'
+                          }`}
+                        >
+                          <img
+                            src={breed.image}
+                            alt={breed.name}
+                            className="w-16 h-16 object-contain"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-gray-800">{breed.name}</span>
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                                Lv.{breed.level}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-600 mb-1">
+                              产出: {breed.baseProduction}/点击
+                            </div>
+                            <div className="flex items-center gap-1 text-sm font-semibold text-amber-700">
+                              <span>💩</span>
+                              <span>{breed.purchasePrice.toLocaleString()}</span>
+                            </div>
+                            {!unlocked && (
+                              <div className="text-xs text-red-500 mt-1">
+                                需要等级 {breed.unlockLevel}
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            disabled={!canBuy}
+                            onClick={() => handleBuyDog(breed.level)}
+                          >
+                            购买
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+
+            <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg">
+              <Trophy className="w-6 h-6" />
+              <span className="text-xs font-bold drop-shadow-lg">排行</span>
             </button>
-            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
-              <TrendingUp className="w-5 h-5" />
-              <span className="text-xs font-semibold">升级</span>
+
+            <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg">
+              <Gift className="w-6 h-6" />
+              <span className="text-xs font-bold drop-shadow-lg">礼物</span>
             </button>
-            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="text-xs font-semibold">商店</span>
+
+            <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg relative">
+              <div className="relative">
+                <span className="text-2xl">📋</span>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-bounce" style={{
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                }}>
+                  3
+                </span>
+              </div>
+              <span className="text-xs font-bold drop-shadow-lg">任务</span>
             </button>
-            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white">
-              <span className="text-lg">👥</span>
-              <span className="text-xs font-semibold">好友</span>
-            </button>
-            <button className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all hover:bg-white/20 text-white relative">
-              <span className="text-lg">📋</span>
-              <span className="text-xs font-semibold">任务</span>
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style={{
-                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              }}>
-                3
-              </span>
+
+            <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg">
+              <Settings className="w-6 h-6" />
+              <span className="text-xs font-bold drop-shadow-lg">设置</span>
             </button>
           </div>
         </div>
@@ -460,6 +550,19 @@ export default function GamePage() {
             opacity: 0;
             transform: translateY(-50px);
           }
+        }
+        
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
         }
       `}</style>
     </div>
