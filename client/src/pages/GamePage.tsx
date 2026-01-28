@@ -16,6 +16,7 @@ import { ParticleEffect } from '@/components/ParticleEffect';
 import { UnlockCelebration } from '@/components/UnlockCelebration';
 import { TabContent } from '@/components/TabContent';
 import { DAILY_TASKS, ACHIEVEMENT_TASKS } from '@/config/taskConfig';
+import { GAME_VERSION, BUILD_DATE } from '@/config/version';
 import { formatNumber } from '@/lib/formatNumber';
 
 export default function GamePage() {
@@ -950,12 +951,25 @@ export default function GamePage() {
                         </button>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">🚧 音效系统即将上线</p>
+                      </div>
                     </div>
                   </div>
 
+                  {/* 版本信息 */}
+                  <div className="p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg border-2 border-gray-200">
+                    <div className="font-bold text-lg mb-2">ℹ️ 版本信息</div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">当前版本:</span>
+                        <span className="font-mono font-bold text-blue-600">{GAME_VERSION}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">更新日期:</span>
+                        <span className="font-mono">{BUILD_DATE}</span>
+                      </div>
+                    </div>
                   </div>
-                </ScrollArea>
-              </DialogContent>
+                </ScrollArea>            </DialogContent>
             </Dialog>
           </div>
         </div>
