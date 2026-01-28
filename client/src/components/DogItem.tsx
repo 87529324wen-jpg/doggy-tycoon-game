@@ -14,6 +14,7 @@ interface DogItemProps {
 export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, containerRef, onClick }: DogItemProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: dog.x, y: dog.y });
+  const [direction, setDirection] = useState<'left' | 'right'>('right'); // 溢达方向
   const dragStartPos = useRef({ x: 0, y: 0 });
   const dragOffset = useRef({ x: 0, y: 0 });
   const breed = getDogBreed(dog.level);
@@ -25,30 +26,36 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     }
   }, [dog.x, dog.y, isDragging]);
 
-  // 狗狗自动溜达
+  // 狗狗自动溢达（左右来回走）
   useEffect(() => {
     if (isDragging) return;
 
     const walkInterval = setInterval(() => {
       setPosition((prev) => {
-        // 随机移动方向和距离
-        const deltaX = (Math.random() - 0.5) * 0.05; // -2.5% 到 +2.5%
-        const deltaY = (Math.random() - 0.5) * 0.05;
+        // 根据当前方向移动
+        const moveDistance = 0.03 + Math.random() * 0.02; // 3%-5% 的移动距离
+        const deltaX = direction === 'right' ? moveDistance : -moveDistance;
+        const deltaY = (Math.random() - 0.5) * 0.02; // 轻微上下摇摆
         
         // 计算新位置
         let newX = prev.x + deltaX;
         let newY = prev.y + deltaY;
         
-        // 草地范围限制：确保狗狗的头部不超过围栏
-        // 狗狗尺寸 24px，锁点在中心，所以需要额外留出 12px 的空间
+        // 草地范围限制
         const containerHeight = containerRef.current?.clientHeight || 600;
-        const dogHalfSize = 12; // 狗狗半高
-        const topOffset = dogHalfSize / containerHeight; // 转换为百分比
+        const dogHalfSize = 12;
+        const topOffset = dogHalfSize / containerHeight;
         
-        const minY = 0.55 + topOffset; // 顶部55%，确保在草地区域
-        const maxY = 0.82 - topOffset; // 底部18% - 狗狗半高
-        const minX = 0.08 + topOffset; // 左边距
-        const maxX = 0.92 - topOffset; // 右边距
+        const minY = 0.55 + topOffset;
+        const maxY = 0.82 - topOffset;
+        const minX = 0.08 + topOffset;
+        const maxX = 0.92 - topOffset;
+        
+        // 检查是否超出边界，如果超出则反向
+        if (newX <= minX || newX >= maxX) {
+          setDirection(prev => prev === 'right' ? 'left' : 'right');
+          newX = Math.max(minX, Math.min(maxX, newX));
+        }
         
         // 限制在草地范围内
         newX = Math.max(minX, Math.min(maxX, newX));
@@ -59,10 +66,10 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         
         return { x: newX, y: newY };
       });
-    }, 3000 + Math.random() * 2000); // 每3-5秒移动一次
+    }, 2000 + Math.random() * 1000); // 每2-3秒移动一次，更频繁
 
     return () => clearInterval(walkInterval);
-  }, [isDragging, dog.id, onDragEnd]);
+  }, [isDragging, dog.id, onDragEnd, direction, containerRef]);
 
   const startTimeRef = useRef<number>(0);
   const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -212,10 +219,10 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
       style={{
         left: `${position.x * 100}%`,
         top: `${position.y * 100}%`,
-        transform: 'translate(-50%, -50%)',
+        transform: `translate(-50%, -50%) ${direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`, // 左右镜像
         touchAction: 'none',
         willChange: isDragging ? 'transform' : 'auto',
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        transition: isDragging ? 'none' : 'all 0.3s ease-out',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

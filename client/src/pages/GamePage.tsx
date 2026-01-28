@@ -18,6 +18,7 @@ import { UnlockCelebration } from '@/components/UnlockCelebration';
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [shopOpen, setShopOpen] = useState(false);
+  const [tasksOpen, setTasksOpen] = useState(false);
   const [energy, setEnergy] = useState(100);
   const [maxEnergy] = useState(100);
   const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([]);
@@ -305,7 +306,7 @@ export default function GamePage() {
             <Dialog>
               <DialogTrigger asChild>
                 <button 
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl transition-transform hover:scale-105 active:scale-95"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 relative"
                   style={{
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     border: '3px solid #5a67d8',
@@ -313,6 +314,11 @@ export default function GamePage() {
                   }}
                 >
                   <span className="text-lg font-black text-white">🐕 {gameState.dogs.length}/{gameState.maxDogs}</span>
+                  {gameState.maxDogs < 12 && (
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-sm shadow-lg animate-pulse">
+                      +
+                    </div>
+                  )}
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-sm">
@@ -574,15 +580,14 @@ export default function GamePage() {
                 <ScrollArea className="h-[60vh] pr-4">
                   <div className="space-y-3">
                     {(() => {
-                      // 获取已解锁的狗 + 下一个待解锁的狗
+                      // 显示所有狗狗，但只有已解锁和下一个待解锁的显示详细信息
                       const maxUnlockedLevel = Math.max(...gameState.unlockedLevels);
                       const nextLockLevel = maxUnlockedLevel + 1;
-                      const displayBreeds = DOG_BREEDS.filter(breed => 
-                        gameState.unlockedLevels.includes(breed.level) || breed.level === nextLockLevel
-                      );
                       
-                      return displayBreeds.map((breed) => {
+                      return DOG_BREEDS.map((breed) => {
                         const isUnlocked = gameState.unlockedLevels.includes(breed.level);
+                        const isNextToUnlock = breed.level === nextLockLevel;
+                        const showDetails = isUnlocked || isNextToUnlock;
                         const canAfford = gameState.coins >= breed.purchasePrice;
                         const canBuy = isUnlocked && canAfford && gameState.dogs.length < gameState.maxDogs;
 
@@ -590,7 +595,11 @@ export default function GamePage() {
                           <div
                             key={breed.id}
                             className={`flex items-center gap-3 p-3 rounded-lg border-2 ${
-                              isUnlocked ? 'bg-white border-amber-200' : 'bg-gray-50 border-gray-300 opacity-75'
+                              isUnlocked 
+                                ? 'bg-white border-amber-200' 
+                                : isNextToUnlock
+                                ? 'bg-gray-50 border-gray-300 opacity-90'
+                                : 'bg-gray-100 border-gray-200 opacity-60'
                             }`}
                           >
                             <img
@@ -610,17 +619,25 @@ export default function GamePage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="text-xs text-gray-600 mb-1">
-                                产出: {breed.baseProduction}/点击
-                              </div>
-                              {isUnlocked ? (
-                                <div className="flex items-center gap-1 text-sm font-semibold text-amber-700">
-                                  <span>💩</span>
-                                  <span>{breed.purchasePrice.toLocaleString()}</span>
-                                </div>
+                              {showDetails ? (
+                                <>
+                                  <div className="text-xs text-gray-600 mb-1">
+                                    产出: {breed.baseProduction}/点击
+                                  </div>
+                                  {isUnlocked ? (
+                                    <div className="flex items-center gap-1 text-sm font-semibold text-amber-700">
+                                      <span>💩</span>
+                                      <span>{breed.purchasePrice.toLocaleString()}</span>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-gray-500">
+                                      通过合成解锁
+                                    </div>
+                                  )}
+                                </>
                               ) : (
-                                <div className="text-xs text-gray-500">
-                                  通过合成解锁
+                                <div className="text-xs text-gray-400">
+                                  ??? 神秘狗狗
                                 </div>
                               )}
                             </div>
@@ -634,13 +651,13 @@ export default function GamePage() {
                               </Button>
                             ) : (
                               <div className="text-xs text-gray-400 px-3">
-                                合成解锁
+                                {isNextToUnlock ? '合成解锁' : '???'}
                               </div>
                             )}
                           </div>
                         );
                       });
-                    })()}
+                    })()
                   </div>
                 </ScrollArea>
               </DialogContent>
@@ -656,17 +673,29 @@ export default function GamePage() {
               <span className="text-xs font-bold drop-shadow-lg">礼物</span>
             </button>
 
-            <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg relative">
-              <div className="relative">
-                <span className="text-2xl">📋</span>
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-bounce" style={{
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                }}>
-                  3
-                </span>
-              </div>
-              <span className="text-xs font-bold drop-shadow-lg">任务</span>
-            </button>
+            <Dialog open={tasksOpen} onOpenChange={setTasksOpen}>
+              <DialogTrigger asChild>
+                <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg relative">
+                  <div className="relative">
+                    <span className="text-2xl">📋</span>
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-bounce" style={{
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    }}>
+                      3
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold drop-shadow-lg">任务</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[75vh]">
+                <TabContent 
+                  activeTab="tasks" 
+                  gameState={gameState} 
+                  onClaimTask={handleClaimTask}
+                  onToggleAutoMerge={toggleAutoMerge}
+                />
+              </DialogContent>
+            </Dialog>
 
             <Dialog>
               <DialogTrigger asChild>
@@ -675,11 +704,12 @@ export default function GamePage() {
                   <span className="text-xs font-bold drop-shadow-lg">设置</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-[70vh]">
                 <DialogHeader>
                   <DialogTitle>⚙️ 设置</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
+                <ScrollArea className="h-[55vh] pr-4">
+                  <div className="space-y-4 py-4">
                   {/* 容量升级 */}
                   <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-200">
                     <div className="font-bold text-lg mb-2">🐾 狗狗容量</div>
@@ -801,8 +831,8 @@ export default function GamePage() {
                     </div>
                   </div>
 
-
-                </div>
+                  </div>
+                </ScrollArea>
               </DialogContent>
             </Dialog>
           </div>
