@@ -67,8 +67,14 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     startPosRef.current = { x: e.clientX, y: e.clientY };
     if (!containerRef.current) return;
     
+    // 阻止默认行为，防止页面滚动
     e.preventDefault();
     e.stopPropagation();
+    
+    // 禁用页面滚动（iOS Safari 修复）
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
     
     const rect = containerRef.current.getBoundingClientRect();
     const dogElement = e.currentTarget as HTMLElement;
@@ -115,6 +121,11 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
+    // 恢复页面滚动
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    
     const duration = Date.now() - startTimeRef.current;
     const distance = Math.sqrt(
       Math.pow(e.clientX - startPosRef.current.x, 2) +
@@ -177,7 +188,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
   return (
     <div
       data-dog-id={dog.id}
-      className={`absolute cursor-move transition-transform ${
+      className={`absolute cursor-move ${
         isDragging ? 'scale-110 z-50' : isClicked ? 'scale-95 z-10' : 'z-10'
       }`}
       style={{
@@ -185,6 +196,8 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         top: `${position.y * 100}%`,
         transform: 'translate(-50%, -50%)',
         touchAction: 'none',
+        willChange: isDragging ? 'transform' : 'auto',
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

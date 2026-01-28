@@ -53,12 +53,19 @@ export function useTelegram() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    console.log('🔍 Initializing Telegram WebApp...');
+    console.log('window.Telegram:', window.Telegram);
+    
     const tg = window.Telegram?.WebApp;
     if (tg) {
+      console.log('✅ Telegram WebApp found:', tg);
+      console.log('👤 User data:', tg.initDataUnsafe.user);
       tg.ready();
       tg.expand();
       setWebApp(tg);
       setIsReady(true);
+    } else {
+      console.error('❌ Telegram WebApp not found!');
     }
   }, []);
 

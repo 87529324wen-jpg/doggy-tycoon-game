@@ -202,7 +202,7 @@ export default function GamePage() {
               boxShadow: '0 4px 8px rgba(255,165,0,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
             }}>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 group-hover:animate-shimmer"></div>
-              <span className="text-3xl animate-bounce" style={{ animationDuration: '2s' }}>💩</span>
+              <span className="text-3xl animate-bounce" data-coin-icon style={{ animationDuration: '2s' }}>💩</span>
               <div className="flex flex-col relative z-10">
                 <span className="text-xs font-bold text-orange-900">便便余额</span>
                 <span className="text-lg font-black text-orange-950">{Math.floor(gameState.coins).toLocaleString()}</span>

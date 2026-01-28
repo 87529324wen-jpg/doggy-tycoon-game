@@ -47,7 +47,10 @@ export function useGameState() {
   // 从云端加载游戏数据
   useEffect(() => {
     async function loadFromCloud() {
+      console.log('🔍 Checking Telegram user:', user);
+      
       if (!user?.id) {
+        console.warn('⚠️ No Telegram user ID found, using localStorage');
         // 没有 Telegram 用户信息，从 localStorage 加载
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -62,14 +65,15 @@ export function useGameState() {
       }
 
       try {
+        console.log('📡 Loading game from cloud for user:', user.id);
         const response = await loadGame(user.id);
         if (response.success) {
+          console.log('✅ Game loaded from cloud:', response.data);
           setGameState({
             ...response.data,
             autoMergeEnabled: false,
             lastSaveTime: Date.now(),
           });
-          console.log('✅ Game loaded from cloud');
         }
       } catch (error) {
         console.error('Failed to load from cloud, using localStorage', error);
@@ -105,7 +109,7 @@ export function useGameState() {
     if (user?.id && now - lastCloudSaveRef.current > 3000) {
       lastCloudSaveRef.current = now;
       try {
-        await saveGameApi({
+        const saveData = {
           telegramId: user.id,
           username: user.username || user.first_name,
           gameState: {
@@ -115,8 +119,10 @@ export function useGameState() {
             userLevel: gameState.userLevel,
             userExp: gameState.userExp,
           },
-        });
-        console.log('✅ Game saved to cloud');
+        };
+        console.log('💾 Saving to cloud:', saveData);
+        await saveGameApi(saveData);
+        console.log('✅ Game saved to cloud successfully');
       } catch (error) {
         console.error('Failed to save to cloud', error);
       }
