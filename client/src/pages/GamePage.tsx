@@ -160,11 +160,8 @@ export default function GamePage() {
             description: `您解锁了 ${breed.name}！\n${breed.description}`,
             duration: 5000,
           });
-        } else {
-          toast.success('合成成功！', {
-            description: `获得了 ${breed.name}`,
-          });
         }
+        // 移除普通合成提示
       }
     }
   };
@@ -582,6 +579,45 @@ export default function GamePage() {
                   <DialogTitle>⚙️ 设置</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
+                  {/* 容量升级 */}
+                  <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-200">
+                    <div className="font-bold text-lg mb-2">🐾 狗狗容量</div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">当前容量:</span>
+                        <span className="font-bold text-lg">{gameState.dogs.length} / {gameState.maxDogs}</span>
+                      </div>
+                      {gameState.maxDogs < 12 && (
+                        <button
+                          onClick={() => {
+                            const cost = gameState.maxDogs * 1000; // 每次升级费用递增
+                            const result = expandCapacity(cost);
+                            if (result.success) {
+                              hapticFeedback.success();
+                              toast.success('✅ 容量升级成功！', {
+                                description: `容量增加到 ${gameState.maxDogs + 2} 个`,
+                              });
+                            } else {
+                              hapticFeedback.error();
+                              toast.error('升级失败', {
+                                description: result.message,
+                              });
+                            }
+                          }}
+                          disabled={gameState.coins < gameState.maxDogs * 1000}
+                          className="w-full py-2 px-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          💎 升级容量 (+2) - {(gameState.maxDogs * 1000).toLocaleString()} 便便
+                        </button>
+                      )}
+                      {gameState.maxDogs >= 12 && (
+                        <div className="text-center text-sm text-gray-500 py-2">
+                          🎉 已达到最大容量！
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* 自动合成 */}
                   <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
                     <div className="flex-1">

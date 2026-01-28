@@ -21,7 +21,9 @@ export interface GameState {
   lastSaveTime: number;
 }
 
-const STORAGE_KEY = 'doggy-poop-tycoon-save';
+const getStorageKey = (userId?: number) => {
+  return userId ? `doggy-poop-tycoon-save-${userId}` : 'doggy-poop-tycoon-save';
+};
 const AUTO_SAVE_INTERVAL = 5000; // 5秒自动保存
 const PRODUCTION_INTERVAL = 1000; // 1秒产出一次
 const EXP_PER_MERGE = 10; // 每次合成获得的经验
@@ -44,90 +46,43 @@ export function useGameState() {
   const autoSaveIntervalRef = useRef<number | undefined>(undefined);
   const lastCloudSaveRef = useRef<number>(Date.now());
 
-  // 从云端加载游戏数据
+  // 从 localStorage 加载游戏数据
   useEffect(() => {
-    async function loadFromCloud() {
-      console.log('🔍 Checking Telegram user:', user);
+    async function loadFromStorage() {
+      console.log('🔍 Loading game from localStorage, user:', user?.id);
       
-      if (!user?.id) {
-        console.warn('⚠️ No Telegram user ID found, using localStorage');
-        // 没有 Telegram 用户信息，从 localStorage 加载
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          try {
-            setGameState(JSON.parse(saved));
-          } catch (e) {
-            console.error('Failed to parse saved game state', e);
-          }
+      const storageKey = getStorageKey(user?.id);
+      const saved = localStorage.getItem(storageKey);
+      
+      if (saved) {
+        try {
+          const loadedState = JSON.parse(saved);
+          console.log('✅ Game loaded from localStorage:', loadedState);
+          setGameState(loadedState);
+        } catch (e) {
+          console.error('Failed to parse saved game state', e);
         }
-        setIsLoading(false);
-        return;
+      } else {
+        console.log('🆕 No saved game found, starting fresh');
       }
-
-      try {
-        console.log('📡 Loading game from cloud for user:', user.id);
-        const response = await loadGame(user.id);
-        if (response.success) {
-          console.log('✅ Game loaded from cloud:', response.data);
-          setGameState({
-            ...response.data,
-            autoMergeEnabled: false,
-            lastSaveTime: Date.now(),
-          });
-        }
-      } catch (error) {
-        console.error('Failed to load from cloud, using localStorage', error);
-        // 云端加载失败，尝试从 localStorage 加载
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          try {
-            setGameState(JSON.parse(saved));
-          } catch (e) {
-            console.error('Failed to parse saved game state', e);
-          }
-        }
-      } finally {
-        setIsLoading(false);
-      }
+      
+      setIsLoading(false);
     }
 
-    loadFromCloud();
+    loadFromStorage();
   }, [user?.id]);
 
-  // 保存游戏状态（本地 + 云端）
+  // 保存游戏状态到 localStorage
   const saveGame = useCallback(async () => {
     const stateToSave = {
       ...gameState,
       lastSaveTime: Date.now(),
     };
     
-    // 保存到 localStorage
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-
-    // 保存到云端（限制频率，避免过于频繁）
-    const now = Date.now();
-    if (user?.id && now - lastCloudSaveRef.current > 3000) {
-      lastCloudSaveRef.current = now;
-      try {
-        const saveData = {
-          telegramId: user.id,
-          username: user.username || user.first_name,
-          gameState: {
-            coins: gameState.coins,
-            dogs: gameState.dogs,
-            maxDogs: gameState.maxDogs,
-            userLevel: gameState.userLevel,
-            userExp: gameState.userExp,
-          },
-        };
-        console.log('💾 Saving to cloud:', saveData);
-        await saveGameApi(saveData);
-        console.log('✅ Game saved to cloud successfully');
-      } catch (error) {
-        console.error('Failed to save to cloud', error);
-      }
-    }
-  }, [gameState, user]);
+    const storageKey = getStorageKey(user?.id);
+    localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+    console.log('💾 Game saved to localStorage:', storageKey);
+  }, [gameState, user?.id]);
 
   // 自动保存
   useEffect(() => {
@@ -206,10 +161,8 @@ export function useGameState() {
     const x = Math.random() * 0.6 + 0.2; // 20%-80%
     const y = Math.random() * 0.4 + 0.3; // 30%-70%
 
-    setGameState(prev => ({
-      ...prev,
-      coins: prev.coins - breed.purchasePrice,
-      dogs: [
+    setGameState(prev => {
+      const newDogs = [
         ...prev.dogs,
         {
           id: `dog-${Date.now()}-${Math.random()}`,
@@ -217,8 +170,19 @@ export function useGameState() {
           x,
           y,
         },
-      ],
-    }));
+      ];
+      
+      // 用户等级 = 已解锁的最高狗狗等级
+      const maxDogLevel = Math.max(...newDogs.map(d => d.level));
+      const newUserLevel = Math.max(prev.userLevel, maxDogLevel);
+      
+      return {
+        ...prev,
+        coins: prev.coins - breed.purchasePrice,
+        dogs: newDogs,
+        userLevel: newUserLevel,
+      };
+    });
 
     return { success: true };
   }, [gameState.coins, gameState.dogs.length, gameState.maxDogs]);
@@ -270,9 +234,8 @@ export function useGameState() {
     const newX = (dog1.x + dog2.x) / 2;
     const newY = (dog1.y + dog2.y) / 2;
 
-    setGameState(prev => ({
-      ...prev,
-      dogs: [
+    setGameState(prev => {
+      const newDogs = [
         ...prev.dogs.filter(d => d.id !== dog1Id && d.id !== dog2Id),
         {
           id: `dog-${Date.now()}-${Math.random()}`,
@@ -280,14 +243,21 @@ export function useGameState() {
           x: newX,
           y: newY,
         },
-      ],
-    }));
-
-    // 增加经验
-    addExp(EXP_PER_MERGE);
+      ];
+      
+      // 用户等级 = 已解锁的最高狗狗等级
+      const maxDogLevel = Math.max(...newDogs.map(d => d.level));
+      const newUserLevel = Math.max(prev.userLevel, maxDogLevel);
+      
+      return {
+        ...prev,
+        dogs: newDogs,
+        userLevel: newUserLevel,
+      };
+    });
 
     return { success: true };
-  }, [gameState.dogs, addExp]);
+  }, [gameState.dogs]);
 
   // 自动合成（扫描所有可合成的狗狗）
   const autoMerge = useCallback(() => {
