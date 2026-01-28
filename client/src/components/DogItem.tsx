@@ -7,10 +7,11 @@ interface DogItemProps {
   onDragStart: (dogId: string) => void;
   onDragEnd: (dogId: string, x: number, y: number) => void;
   onMergeAttempt: (dog1Id: string, dog2Id: string) => void;
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  containerRef: React.RefObject<HTMLDivElement>;
+  onClick?: (x: number, y: number) => void;
 }
 
-export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, containerRef }: DogItemProps) {
+export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, containerRef, onClick }: DogItemProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: dog.x, y: dog.y });
   const dragStartPos = useRef({ x: 0, y: 0 });
@@ -24,7 +25,12 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     }
   }, [dog.x, dog.y, isDragging]);
 
+  const startTimeRef = useRef<number>(0);
+  const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
   const handlePointerDown = (e: React.PointerEvent) => {
+    startTimeRef.current = Date.now();
+    startPosRef.current = { x: e.clientX, y: e.clientY };
     if (!containerRef.current) return;
     
     e.preventDefault();
@@ -70,6 +76,16 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
+    const duration = Date.now() - startTimeRef.current;
+    const distance = Math.sqrt(
+      Math.pow(e.clientX - startPosRef.current.x, 2) +
+      Math.pow(e.clientY - startPosRef.current.y, 2)
+    );
+
+    // 如果是快速点击（不是拖拽），触发onClick
+    if (duration < 300 && distance < 10 && onClick) {
+      onClick(e.clientX, e.clientY);
+    }
     if (!isDragging) return;
     
     e.preventDefault();

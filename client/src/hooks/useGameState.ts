@@ -296,6 +296,14 @@ export function useGameState() {
     return () => clearInterval(interval);
   }, [gameState.autoMergeEnabled, autoMerge]);
 
+  // 添加金币（用于点击产出）
+  const addCoins = useCallback((amount: number) => {
+    setGameState(prev => ({
+      ...prev,
+      coins: prev.coins + amount,
+    }));
+  }, []);
+
   return {
     gameState,
     buyDog,
@@ -307,5 +315,6 @@ export function useGameState() {
     autoMerge,
     calculateProduction,
     saveGame,
+    addCoins,
   };
 }
