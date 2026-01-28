@@ -19,6 +19,7 @@ export interface GameState {
   userExp: number;
   autoMergeEnabled: boolean;
   lastSaveTime: number;
+  unlockedLevels: number[]; // 已解锁的狗狗等级
 }
 
 const getStorageKey = (userId?: number) => {
@@ -40,6 +41,7 @@ export function useGameState() {
     userExp: 0,
     autoMergeEnabled: false,
     lastSaveTime: Date.now(),
+    unlockedLevels: [1], // 默认解锁 Level 1
   });
 
   const productionIntervalRef = useRef<number | undefined>(undefined);
@@ -163,9 +165,9 @@ export function useGameState() {
       return { success: false, message: '狗狗数量已达上限' };
     }
 
-    // 随机位置
+    // 随机位置，确保在草地区域（下半部分）
     const x = Math.random() * 0.6 + 0.2; // 20%-80%
-    const y = Math.random() * 0.4 + 0.3; // 30%-70%
+    const y = Math.random() * 0.25 + 0.55; // 55%-80%，确保在屏幕下半部分
 
     setGameState(prev => {
       const newDogs = [
@@ -249,8 +251,11 @@ export function useGameState() {
     }
 
     const newLevel = getMergedLevel(dog1.level);
-    const newX = (dog1.x + dog2.x) / 2;
-    const newY = (dog1.y + dog2.y) / 2;
+    let newX = (dog1.x + dog2.x) / 2;
+    let newY = (dog1.y + dog2.y) / 2;
+    
+    // 确保合成后的狗狗在草地区域
+    newY = Math.max(0.55, Math.min(0.8, newY)); // 限制在55%-80%范围
 
     setGameState(prev => {
       const newDogs = [
@@ -267,10 +272,16 @@ export function useGameState() {
       const maxDogLevel = Math.max(...newDogs.map(d => d.level));
       const newUserLevel = Math.max(prev.userLevel, maxDogLevel);
       
+      // 添加新等级到 unlockedLevels
+      const newUnlockedLevels = prev.unlockedLevels.includes(newLevel)
+        ? prev.unlockedLevels
+        : [...prev.unlockedLevels, newLevel].sort((a, b) => a - b);
+      
       return {
         ...prev,
         dogs: newDogs,
         userLevel: newUserLevel,
+        unlockedLevels: newUnlockedLevels,
       };
     });
 

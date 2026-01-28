@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useTelegram } from '@/hooks/useTelegram';
 import { DogItem } from '@/components/DogItem';
@@ -142,6 +142,9 @@ export default function GamePage() {
   };
 
   const handleMergeAttempt = (dog1Id: string, dog2Id: string) => {
+    // 合成前记录已解锁的等级
+    const previousUnlockedLevels = [...gameState.unlockedLevels];
+    
     const result = mergeDogs(dog1Id, dog2Id);
     if (result.success) {
       hapticFeedback.success();
@@ -152,9 +155,9 @@ export default function GamePage() {
         const breed = getDogBreed(mergedDog.level);
         
         // 检查是否是首次解锁这个等级
-        const hasOtherSameLevel = gameState.dogs.filter(d => d.id !== dog1Id && d.level === mergedDog.level).length > 0;
+        const isNewUnlock = !previousUnlockedLevels.includes(mergedDog.level);
         
-        if (!hasOtherSameLevel) {
+        if (isNewUnlock) {
           // 首次解锁，显示特殊提示
           toast.success('🎉 恭喜解锁新狗狗！', {
             description: `您解锁了 ${breed.name}！\n${breed.description}`,
@@ -395,17 +398,14 @@ export default function GamePage() {
             </DialogHeader>
             <ScrollArea className="h-[60vh] pr-4">
               <div className="space-y-3">
-                {DOG_BREEDS.map((breed) => {
-                  const unlocked = isUnlocked(breed.level, gameState.userLevel);
+                {DOG_BREEDS.filter(breed => gameState.unlockedLevels.includes(breed.level)).map((breed) => {
                   const canAfford = gameState.coins >= breed.purchasePrice;
-                  const canBuy = unlocked && canAfford && gameState.dogs.length < gameState.maxDogs;
+                  const canBuy = canAfford && gameState.dogs.length < gameState.maxDogs;
 
                   return (
                     <div
                       key={breed.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 ${
-                        unlocked ? 'bg-white border-amber-200' : 'bg-gray-100 border-gray-200 opacity-60'
-                      }`}
+                      className="flex items-center gap-3 p-3 rounded-lg border-2 bg-white border-amber-200"
                     >
                       <img
                         src={breed.image}
@@ -426,11 +426,7 @@ export default function GamePage() {
                           <span>💩</span>
                           <span>{breed.purchasePrice.toLocaleString()}</span>
                         </div>
-                        {!unlocked && (
-                          <div className="text-xs text-red-500 mt-1">
-                            需要等级 {breed.unlockLevel}
-                          </div>
-                        )}
+
                       </div>
                       <Button
                         size="sm"
@@ -573,17 +569,14 @@ export default function GamePage() {
                 </DialogHeader>
                 <ScrollArea className="h-[60vh] pr-4">
                   <div className="space-y-3">
-                    {DOG_BREEDS.map((breed) => {
-                      const unlocked = isUnlocked(breed.level, gameState.userLevel);
+                    {DOG_BREEDS.filter(breed => gameState.unlockedLevels.includes(breed.level)).map((breed) => {
                       const canAfford = gameState.coins >= breed.purchasePrice;
-                      const canBuy = unlocked && canAfford && gameState.dogs.length < gameState.maxDogs;
+                      const canBuy = canAfford && gameState.dogs.length < gameState.maxDogs;
 
                       return (
                         <div
                           key={breed.id}
-                          className={`flex items-center gap-3 p-3 rounded-lg border-2 ${
-                            unlocked ? 'bg-white border-amber-200' : 'bg-gray-100 border-gray-200 opacity-60'
-                          }`}
+                          className="flex items-center gap-3 p-3 rounded-lg border-2 bg-white border-amber-200"
                         >
                           <img
                             src={breed.image}
@@ -604,11 +597,7 @@ export default function GamePage() {
                               <span>💩</span>
                               <span>{breed.purchasePrice.toLocaleString()}</span>
                             </div>
-                            {!unlocked && (
-                              <div className="text-xs text-red-500 mt-1">
-                                需要等级 {breed.unlockLevel}
-                              </div>
-                            )}
+
                           </div>
                           <Button
                             size="sm"

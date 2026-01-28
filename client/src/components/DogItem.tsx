@@ -45,7 +45,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         const dogHalfSize = 12; // 狗狗半高
         const topOffset = dogHalfSize / containerHeight; // 转换为百分比
         
-        const minY = 0.25 + topOffset; // 顶部25% + 狗狗半高
+        const minY = 0.55 + topOffset; // 顶部55%，确保在草地区域
         const maxY = 0.82 - topOffset; // 底部18% - 狗狗半高
         const minX = 0.08 + topOffset; // 左边距
         const maxX = 0.92 - topOffset; // 右边距
@@ -118,7 +118,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     const dogHalfSize = 12;
     const topOffset = dogHalfSize / containerHeight;
     
-    const minY = 0.25 + topOffset;
+    const minY = 0.55 + topOffset; // 确保在草地区域
     const maxY = 0.82 - topOffset;
     const minX = 0.08 + topOffset;
     const maxX = 0.92 - topOffset;
@@ -160,7 +160,14 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
       
       allDogs.forEach((otherDogElement) => {
         const otherDogId = otherDogElement.getAttribute('data-dog-id');
+        const otherDogLevel = parseInt(otherDogElement.getAttribute('data-dog-level') || '0');
+        
         if (otherDogId && otherDogId !== dog.id) {
+          // 先检查等级是否相同
+          if (otherDogLevel !== dog.level) {
+            return; // 等级不同，不能合成
+          }
+          
           const rect1 = dogElement.getBoundingClientRect();
           const rect2 = otherDogElement.getBoundingClientRect();
           
@@ -198,6 +205,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
   return (
     <div
       data-dog-id={dog.id}
+      data-dog-level={dog.level}
       className={`absolute cursor-move ${
         isDragging ? 'scale-110 z-50' : isClicked ? 'scale-95 z-10' : 'z-10'
       }`}
