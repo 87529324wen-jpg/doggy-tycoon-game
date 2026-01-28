@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { CheckCircle2, Circle, Volume2, VolumeX } from 'lucide-react';
 import { DAILY_TASKS, ACHIEVEMENT_TASKS, type Task } from '@/config/taskConfig';
 import type { GameState } from '@/hooks/useGameState';
+import { formatNumber } from '@/lib/formatNumber';
 
 interface TabContentProps {
   activeTab: 'home' | 'shop' | 'tasks' | 'settings';
@@ -100,7 +101,7 @@ export function TabContent({ activeTab, gameState, onClaimTask, onToggleAutoMerg
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-sm">
-                              <span className="font-bold text-amber-600">💩 {task.reward.coins}</span>
+                              <span className="font-bold text-amber-600">💩 {formatNumber(task.reward.coins)}</span>
                               {task.reward.exp && (
                                 <span className="text-blue-600">⭐ {task.reward.exp} EXP</span>
                               )}
@@ -163,7 +164,7 @@ export function TabContent({ activeTab, gameState, onClaimTask, onToggleAutoMerg
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-sm">
-                              <span className="font-bold text-amber-600">💩 {task.reward.coins}</span>
+                              <span className="font-bold text-amber-600">💩 {formatNumber(task.reward.coins)}</span>
                               {task.reward.exp && (
                                 <span className="text-blue-600">⭐ {task.reward.exp} EXP</span>
                               )}

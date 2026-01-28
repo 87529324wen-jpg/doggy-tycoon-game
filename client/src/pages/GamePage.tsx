@@ -14,6 +14,7 @@ import { PoopIcon } from '@/components/PoopIcon';
 import { ComboDisplay, CriticalHit } from '@/components/ComboDisplay';
 import { ParticleEffect } from '@/components/ParticleEffect';
 import { UnlockCelebration } from '@/components/UnlockCelebration';
+import { formatNumber } from '@/lib/formatNumber';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -285,7 +286,7 @@ export default function GamePage() {
               </div>
               <div className="flex flex-col relative z-10">
                 <span className="text-xs font-bold text-orange-900">便便余额</span>
-                <span className="text-lg font-black text-orange-950">{Math.floor(gameState.coins).toLocaleString()}</span>
+                <span className="text-lg font-black text-orange-950">{formatNumber(gameState.coins)}</span>
               </div>
             </div>
 
@@ -298,7 +299,7 @@ export default function GamePage() {
               <TrendingUp className="w-6 h-6 text-white animate-pulse" />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-teal-100">每秒</span>
-                <span className="text-lg font-black text-white">+{production.toLocaleString()}</span>
+                <span className="text-lg font-black text-white">+{formatNumber(production)}</span>
               </div>
             </div>
 
@@ -337,7 +338,7 @@ export default function GamePage() {
                         升级后容量 +2，可以拥有更多狗狗！
                       </p>
                       <p className="text-lg font-bold text-purple-700 mb-3">
-                        💰 需要: {expansionCost.toLocaleString()} 便便
+                        💰 需要: {formatNumber(expansionCost)} 便便
                       </p>
                       <Button 
                         onClick={handleExpandCapacity}
@@ -627,7 +628,7 @@ export default function GamePage() {
                                   {isUnlocked ? (
                                     <div className="flex items-center gap-1 text-sm font-semibold text-amber-700">
                                       <span>💩</span>
-                                      <span>{breed.purchasePrice.toLocaleString()}</span>
+                                      <span>{formatNumber(breed.purchasePrice)}</span>
                                     </div>
                                   ) : (
                                     <div className="text-xs text-gray-500">
