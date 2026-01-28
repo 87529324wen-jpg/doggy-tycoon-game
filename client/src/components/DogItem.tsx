@@ -222,7 +222,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
       style={{
         left: `${position.x * 100}%`,
         top: `${position.y * 100}%`,
-        transform: `translate(-50%, -50%) ${direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`, // 左右镜像
+        transform: 'translate(-50%, -50%)',
         touchAction: 'none',
         willChange: isDragging ? 'transform' : 'auto',
         transition: isDragging ? 'none' : 'all 0.8s ease-in-out',
@@ -237,6 +237,9 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
           alt={breed.name}
           className={`w-24 h-24 sm:w-28 sm:h-28 object-contain pointer-events-none select-none ${isWalking ? 'dog-walking' : ''}`}
           draggable={false}
+          style={{
+            transform: direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
+          }}
         />
         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
           Lv.{dog.level}
