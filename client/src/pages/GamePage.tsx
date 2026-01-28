@@ -200,6 +200,42 @@ export default function GamePage() {
   const expansionCost = gameState.maxDogs * 1000;
   const energyPercent = (energy / maxEnergy) * 100;
 
+  // 强制全屏和禁止滚动
+  useEffect(() => {
+    // 设置全屏高度
+    const setFullHeight = () => {
+      const vh = window.innerHeight;
+      document.documentElement.style.setProperty('--app-height', `${vh}px`);
+    };
+    
+    setFullHeight();
+    window.addEventListener('resize', setFullHeight);
+    
+    // 禁止所有滚动
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    document.documentElement.style.overflow = 'hidden';
+    
+    // 禁止 iOS 滚动弹性
+    const preventScroll = (e: TouchEvent) => {
+      if (e.touches.length > 1) return; // 允许多点触摸
+      const target = e.target as HTMLElement;
+      // 只允许对话框内容滚动
+      if (!target.closest('[data-radix-scroll-area-viewport]')) {
+        e.preventDefault();
+      }
+    };
+    
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    
+    return () => {
+      window.removeEventListener('resize', setFullHeight);
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, []);
+
   return (
     <div 
       className="min-h-screen flex flex-col relative"
@@ -210,9 +246,10 @@ export default function GamePage() {
         right: 0,
         bottom: 0,
         width: '100vw',
-        height: '100vh',
+        height: 'var(--app-height, 100vh)',
         overflow: 'hidden',
         touchAction: 'none',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
       {/* 顶部状态栏 - 升级版卡通风格 */}
@@ -257,14 +294,57 @@ export default function GamePage() {
               </div>
             </div>
 
-            {/* 容量 */}
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              border: '3px solid #5a67d8',
-              boxShadow: '0 4px 8px rgba(102,126,234,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
-            }}>
-              <span className="text-lg font-black text-white">🐕 {gameState.dogs.length}/{gameState.maxDogs}</span>
-            </div>
+            {/* 容量 - 点击升级 */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <button 
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl transition-transform hover:scale-105 active:scale-95"
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    border: '3px solid #5a67d8',
+                    boxShadow: '0 4px 8px rgba(102,126,234,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
+                  }}
+                >
+                  <span className="text-lg font-black text-white">🐕 {gameState.dogs.length}/{gameState.maxDogs}</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>🐾 扩容狗狗容量</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold mb-2">当前容量: {gameState.maxDogs}</p>
+                    <p className="text-gray-600">最大容量: 12</p>
+                  </div>
+                  
+                  {gameState.maxDogs < 12 ? (
+                    <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg">
+                      <p className="text-sm text-gray-700 mb-3">
+                        升级后容量 +2，可以拥有更多狗狗！
+                      </p>
+                      <p className="text-lg font-bold text-purple-700 mb-3">
+                        💰 需要: {expansionCost.toLocaleString()} 便便
+                      </p>
+                      <Button 
+                        onClick={handleExpandCapacity}
+                        disabled={gameState.coins < expansionCost}
+                        className="w-full"
+                        size="lg"
+                      >
+                        🚀 升级容量
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 p-4 rounded-lg text-center">
+                      <p className="text-lg font-bold text-green-700">
+                        🎉 已达到最大容量！
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* 能量条 */}

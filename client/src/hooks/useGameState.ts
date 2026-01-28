@@ -49,10 +49,16 @@ export function useGameState() {
   // 从 localStorage 加载游戏数据
   useEffect(() => {
     async function loadFromStorage() {
-      console.log('🔍 Loading game from localStorage, user:', user?.id);
+      console.log('='.repeat(50));
+      console.log('🔍 Loading game from localStorage');
+      console.log('👤 Telegram user:', user);
+      console.log('🆔 User ID:', user?.id);
       
       const storageKey = getStorageKey(user?.id);
+      console.log('🔑 Storage key:', storageKey);
+      
       const saved = localStorage.getItem(storageKey);
+      console.log('💾 Saved data:', saved ? 'Found' : 'Not found');
       
       if (saved) {
         try {
@@ -227,8 +233,20 @@ export function useGameState() {
     const dog1 = gameState.dogs.find(d => d.id === dog1Id);
     const dog2 = gameState.dogs.find(d => d.id === dog2Id);
 
-    if (!dog1 || !dog2) return { success: false };
-    if (!canMerge(dog1.level, dog2.level)) return { success: false };
+    console.log('🔄 尝试合成:', { dog1, dog2 });
+    
+    if (!dog1 || !dog2) {
+      console.log('❌ 合成失败: 找不到狗狗');
+      return { success: false };
+    }
+    
+    const canMergeResult = canMerge(dog1.level, dog2.level);
+    console.log('🔍 canMerge 结果:', canMergeResult, { dog1Level: dog1.level, dog2Level: dog2.level });
+    
+    if (!canMergeResult) {
+      console.log('❌ 合成失败: 不满足合成条件');
+      return { success: false };
+    }
 
     const newLevel = getMergedLevel(dog1.level);
     const newX = (dog1.x + dog2.x) / 2;

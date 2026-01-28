@@ -39,11 +39,16 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         let newX = prev.x + deltaX;
         let newY = prev.y + deltaY;
         
-        // 草地范围限制：只能在草地上活动，不能到围栏上方
-        const minY = 0.25; // 顶部25%是状态栏+围栏
-        const maxY = 0.82; // 底部18%是导航栏
-        const minX = 0.08; // 左右各留8%边距（围栏内）
-        const maxX = 0.92;
+        // 草地范围限制：确保狗狗的头部不超过围栏
+        // 狗狗尺寸 24px，锁点在中心，所以需要额外留出 12px 的空间
+        const containerHeight = containerRef.current?.clientHeight || 600;
+        const dogHalfSize = 12; // 狗狗半高
+        const topOffset = dogHalfSize / containerHeight; // 转换为百分比
+        
+        const minY = 0.25 + topOffset; // 顶部25% + 狗狗半高
+        const maxY = 0.82 - topOffset; // 底部18% - 狗狗半高
+        const minX = 0.08 + topOffset; // 左边距
+        const maxX = 0.92 - topOffset; // 右边距
         
         // 限制在草地范围内
         newX = Math.max(minX, Math.min(maxX, newX));
@@ -108,11 +113,15 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     const newX = (e.clientX - rect.left - dragOffset.current.x) / rect.width;
     const newY = (e.clientY - rect.top - dragOffset.current.y) / rect.height;
     
-    // 草地范围限制：只能在草地上活动，不能到围栏上方
-    const minY = 0.25; // 顶部25%是状态栏+围栏
-    const maxY = 0.82; // 底部18%是导航栏
-    const minX = 0.08; // 左右各留8%边距（围栏内）
-    const maxX = 0.92;
+    // 草地范围限制：确保狗狗的头部不超过围栏
+    const containerHeight = rect.height;
+    const dogHalfSize = 12;
+    const topOffset = dogHalfSize / containerHeight;
+    
+    const minY = 0.25 + topOffset;
+    const maxY = 0.82 - topOffset;
+    const minX = 0.08 + topOffset;
+    const maxX = 0.92 - topOffset;
     
     const clampedX = Math.max(minX, Math.min(maxX, newX));
     const clampedY = Math.max(minY, Math.min(maxY, newY));
@@ -155,12 +164,13 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
           const rect1 = dogElement.getBoundingClientRect();
           const rect2 = otherDogElement.getBoundingClientRect();
           
-          // 检测碰撞
+          // 检测碰撞（增大容错范围）
+          const tolerance = 20; // 增加 20px 的容错范围
           const overlap = !(
-            rect1.right < rect2.left ||
-            rect1.left > rect2.right ||
-            rect1.bottom < rect2.top ||
-            rect1.top > rect2.bottom
+            rect1.right + tolerance < rect2.left ||
+            rect1.left - tolerance > rect2.right ||
+            rect1.bottom + tolerance < rect2.top ||
+            rect1.top - tolerance > rect2.bottom
           );
           
           if (overlap && !merged) {
