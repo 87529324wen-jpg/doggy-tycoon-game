@@ -205,6 +205,14 @@ export default function GamePage() {
     }
   };
 
+  const handleClaimTask = (taskId: string) => {
+    // TODO: 实现任务领取逻辑
+    hapticFeedback.success();
+    toast.success('领取成功！', {
+      description: '奖励已发放',
+    });
+  };
+
   const production = calculateProduction();
   const expProgress = (gameState.userExp / 100) * 100;
   const expansionCost = gameState.maxDogs * 1000;
