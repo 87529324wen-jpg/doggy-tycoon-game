@@ -1,6 +1,0 @@
-{
-  "buildCommand": "pnpm install && cd client && pnpm exec vite build",
-  "outputDirectory": "client/dist",
-  "installCommand": "pnpm install",
-  "framework": null
-}
