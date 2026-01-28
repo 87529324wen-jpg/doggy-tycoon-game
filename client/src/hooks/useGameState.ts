@@ -66,6 +66,18 @@ export function useGameState() {
         try {
           const loadedState = JSON.parse(saved);
           console.log('✅ Game loaded from localStorage:', loadedState);
+          
+          // 为旧存档添加 unlockedLevels 默认值
+          if (!loadedState.unlockedLevels) {
+            loadedState.unlockedLevels = [1]; // 默认解锁 Level 1
+            // 如果有狗狗，将它们的等级也添加到已解锁列表
+            if (loadedState.dogs && loadedState.dogs.length > 0) {
+              const dogLevels = loadedState.dogs.map((d: any) => d.level);
+              loadedState.unlockedLevels = [...new Set([1, ...dogLevels])].sort((a, b) => a - b);
+            }
+            console.log('🔧 Added unlockedLevels for old save:', loadedState.unlockedLevels);
+          }
+          
           setGameState(loadedState);
         } catch (e) {
           console.error('Failed to parse saved game state', e);
