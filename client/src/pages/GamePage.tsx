@@ -26,7 +26,7 @@ export default function GamePage() {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [criticalHits, setCriticalHits] = useState<Array<{ id: number; x: number; y: number; multiplier: number }>>([]);
   const comboTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const { hapticFeedback } = useTelegram();
+  const { hapticFeedback, user } = useTelegram();
   const {
     gameState,
     buyDog,
