@@ -102,13 +102,21 @@ export default function GamePage() {
       // 添加金币到游戏状态
       addCoins(coinAmount);
       
-      // 显示屎掉落动画
-      const poopId = Date.now() + Math.random();
-      setPoopAnimations((prev) => [...prev, { id: poopId, x, y, amount: coinAmount, isCritical, multiplier }]);
+      // 显示屎掉落动画（使用更可靠的 ID 生成）
+      const poopId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+      setPoopAnimations((prev) => {
+        // 限制最多 20 个动画，防止卡顿
+        const newAnims = [...prev, { id: poopId, x, y, amount: coinAmount, isCritical, multiplier }];
+        return newAnims.length > 20 ? newAnims.slice(-20) : newAnims;
+      });
       
       // 粒子特效
-      const particleId = Date.now() + Math.random();
-      setParticles((prev) => [...prev, { id: particleId, x, y }]);
+      const particleId = Date.now() * 1000 + Math.floor(Math.random() * 1000) + 1;
+      setParticles((prev) => {
+        // 限制最多 15 个粒子
+        const newParticles = [...prev, { id: particleId, x, y }];
+        return newParticles.length > 15 ? newParticles.slice(-15) : newParticles;
+      });
     }
   };
 
@@ -165,11 +173,7 @@ export default function GamePage() {
     const result = buyDog(level);
     if (result.success) {
       hapticFeedback.success();
-      const breed = getDogBreed(level);
-      toast.success(`购买成功！`, {
-        description: `获得了 ${breed.name}`,
-      });
-      setShopOpen(false);
+      // 购买成功，保持商店打开，不显示提示
     } else {
       hapticFeedback.error();
       toast.error('购买失败', {
@@ -566,10 +570,117 @@ export default function GamePage() {
               <span className="text-xs font-bold drop-shadow-lg">任务</span>
             </button>
 
-            <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg">
-              <Settings className="w-6 h-6" />
-              <span className="text-xs font-bold drop-shadow-lg">设置</span>
-            </button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all hover:bg-white/30 active:scale-95 text-white hover:shadow-lg">
+                  <Settings className="w-6 h-6" />
+                  <span className="text-xs font-bold drop-shadow-lg">设置</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>⚙️ 设置</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  {/* 自动合成 */}
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                    <div className="flex-1">
+                      <div className="font-bold text-lg flex items-center gap-2">
+                        🤖 自动合成
+                        {gameState.userLevel < 20 && (
+                          <span className="text-xs bg-orange-500 text-white px-2 py-0.5 rounded-full">
+                            Lv.20解锁
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {gameState.userLevel >= 20 
+                          ? '自动合成相同等级的狗狗' 
+                          : '达到 20 级解锁此功能'}
+                      </p>
+                    </div>
+                    <button
+                      disabled={gameState.userLevel < 20}
+                      onClick={() => {
+                        const newState = toggleAutoMerge();
+                        if (newState) {
+                          toast.success('🎉 自动合成已开启！', {
+                            description: '系统将每 2 秒自动合成相同等级的狗狗',
+                          });
+                        }
+                      }}
+                      className={`w-14 h-8 rounded-full transition-all ${
+                        gameState.userLevel < 20
+                          ? 'bg-gray-300 cursor-not-allowed'
+                          : gameState.autoMergeEnabled
+                          ? 'bg-green-500'
+                          : 'bg-gray-400'
+                      } relative`}
+                    >
+                      <div
+                        className={`w-6 h-6 bg-white rounded-full absolute top-1 transition-all ${
+                          gameState.autoMergeEnabled ? 'left-7' : 'left-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* 用户信息 */}
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+                    <div className="font-bold text-lg mb-2">👤 账号信息</div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Telegram ID:</span>
+                        <span className="font-mono">{user?.id || '未登录'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">用户名:</span>
+                        <span>{user?.username || user?.first_name || '游客'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">等级:</span>
+                        <span className="font-bold text-purple-600">Lv.{gameState.userLevel}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 音量控制 */}
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border-2 border-green-200">
+                    <div className="font-bold text-lg mb-2">🔊 音量控制</div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">音效:</span>
+                        <button className="w-14 h-8 rounded-full bg-gray-400 relative">
+                          <div className="w-6 h-6 bg-white rounded-full absolute top-1 left-1" />
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">背景音乐:</span>
+                        <button className="w-14 h-8 rounded-full bg-gray-400 relative">
+                          <div className="w-6 h-6 bg-white rounded-full absolute top-1 left-1" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">🚧 音效系统即将上线</p>
+                    </div>
+                  </div>
+
+                  {/* 游戏统计 */}
+                  <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-200">
+                    <div className="font-bold text-lg mb-2">📊 游戏统计</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="text-center p-2 bg-white rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">{gameState.dogs.length}</div>
+                        <div className="text-gray-600">狗狗数量</div>
+                      </div>
+                      <div className="text-center p-2 bg-white rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">{Math.floor(gameState.coins).toLocaleString()}</div>
+                        <div className="text-gray-600">总便便数</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>

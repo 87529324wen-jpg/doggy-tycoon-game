@@ -357,11 +357,13 @@ export function useGameState() {
 
   // 切换自动合成
   const toggleAutoMerge = useCallback(() => {
+    const newState = !gameState.autoMergeEnabled;
     setGameState(prev => ({
       ...prev,
-      autoMergeEnabled: !prev.autoMergeEnabled,
+      autoMergeEnabled: newState,
     }));
-  }, []);
+    return newState;
+  }, [gameState.autoMergeEnabled]);
 
   // 自动合成定时器
   useEffect(() => {

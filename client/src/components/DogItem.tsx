@@ -207,8 +207,11 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         <img
           src={breed.image}
           alt={breed.name}
-          className="w-16 h-16 sm:w-20 sm:h-20 object-contain pointer-events-none select-none"
+          className="w-24 h-24 sm:w-28 sm:h-28 object-contain pointer-events-none select-none animate-wiggle"
           draggable={false}
+          style={{
+            animation: 'wiggle 3s ease-in-out infinite',
+          }}
         />
         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
           Lv.{dog.level}
