@@ -1,3 +1,4 @@
+// Build: 1769603015
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useTelegram } from '@/hooks/useTelegram';
