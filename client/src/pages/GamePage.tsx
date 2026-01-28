@@ -15,6 +15,7 @@ import { ComboDisplay, CriticalHit } from '@/components/ComboDisplay';
 import { ParticleEffect } from '@/components/ParticleEffect';
 import { UnlockCelebration } from '@/components/UnlockCelebration';
 import { TabContent } from '@/components/TabContent';
+import { DAILY_TASKS, ACHIEVEMENT_TASKS } from '@/config/taskConfig';
 import { formatNumber } from '@/lib/formatNumber';
 
 export default function GamePage() {
@@ -707,13 +708,111 @@ export default function GamePage() {
                   <span className="text-xs font-bold drop-shadow-lg">任务</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[60vh] overflow-hidden p-0">
-                <TabContent 
-                  activeTab="tasks" 
-                  gameState={gameState} 
-                  onClaimTask={handleClaimTask}
-                  onToggleAutoMerge={toggleAutoMerge}
-                />
+              <DialogContent className="max-w-md w-[90vw] p-0 gap-0">
+                <div className="max-h-[55vh] overflow-y-auto">
+                  <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
+                    <div className="space-y-6">
+                      {/* 每日任务 */}
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-lg font-bold text-purple-700">📅 每日任务</h3>
+                          <span className="text-xs text-gray-500">每日刷新</span>
+                        </div>
+                        <div className="space-y-3">
+                          {DAILY_TASKS.map((task) => {
+                            const progress = task.type === 'click' ? gameState.taskStats.totalClicks :
+                                           task.type === 'collect' ? gameState.taskStats.totalCoinsCollected :
+                                           task.type === 'merge' ? gameState.taskStats.totalMerges : 0;
+                            const currentProgress = Math.min(progress, task.target);
+                            const progressPercent = (currentProgress / task.target) * 100;
+                            const completed = gameState.completedTasks.includes(task.id);
+                            const canClaim = currentProgress >= task.target && !completed;
+
+                            return (
+                              <div key={task.id} className={`p-4 rounded-xl border-2 ${
+                                completed ? 'bg-gray-100 border-gray-300' :
+                                canClaim ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-400 shadow-lg' :
+                                'bg-white border-purple-200'
+                              }`}>
+                                <div className="flex items-start gap-3">
+                                  <div className="text-3xl">{task.icon}</div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <h4 className="font-bold text-gray-800">{task.title}</h4>
+                                      {completed ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <Circle className="w-5 h-5 text-gray-300" />}
+                                    </div>
+                                    <p className="text-xs text-gray-600 mb-2">{task.description}</p>
+                                    <div className="mb-2">
+                                      <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                        <span>进度</span>
+                                        <span>{currentProgress}/{task.target}</span>
+                                      </div>
+                                      <Progress value={progressPercent} className="h-2" />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-bold text-amber-600">💩 {formatNumber(task.reward.coins)}</span>
+                                      {canClaim && (
+                                        <Button size="sm" onClick={() => handleClaimTask(task.id)} className="bg-gradient-to-r from-yellow-400 to-orange-400">领取</Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      {/* 成就任务 */}
+                      <div>
+                        <h3 className="text-lg font-bold text-purple-700 mb-3">🏆 成就任务</h3>
+                        <div className="space-y-3">
+                          {ACHIEVEMENT_TASKS.map((task) => {
+                            const progress = task.type === 'unlock' ? gameState.unlockedLevels.length :
+                                           task.type === 'capacity' ? gameState.maxDogs :
+                                           task.type === 'level' ? gameState.userLevel : 0;
+                            const currentProgress = Math.min(progress, task.target);
+                            const progressPercent = (currentProgress / task.target) * 100;
+                            const completed = gameState.completedTasks.includes(task.id);
+                            const canClaim = currentProgress >= task.target && !completed;
+
+                            return (
+                              <div key={task.id} className={`p-4 rounded-xl border-2 ${
+                                completed ? 'bg-gray-100 border-gray-300' :
+                                canClaim ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-400 shadow-lg' :
+                                'bg-white border-purple-200'
+                              }`}>
+                                <div className="flex items-start gap-3">
+                                  <div className="text-3xl">{task.icon}</div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <h4 className="font-bold text-gray-800">{task.title}</h4>
+                                      {completed ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <Circle className="w-5 h-5 text-gray-300" />}
+                                    </div>
+                                    <p className="text-xs text-gray-600 mb-2">{task.description}</p>
+                                    <div className="mb-2">
+                                      <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                        <span>进度</span>
+                                        <span>{currentProgress}/{task.target}</span>
+                                      </div>
+                                      <Progress value={progressPercent} className="h-2" />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-bold text-amber-600">💩 {formatNumber(task.reward.coins)}</span>
+                                      {canClaim && (
+                                        <Button size="sm" onClick={() => handleClaimTask(task.id)} className="bg-gradient-to-r from-yellow-400 to-orange-400">领取</Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
 
