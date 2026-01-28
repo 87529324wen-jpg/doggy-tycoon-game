@@ -55,7 +55,7 @@ export default function GamePage() {
 
   const handleDogClick = (dogId: string, x: number, y: number) => {
     if (energy < 1) {
-      toast.error('能量不足', { description: '等待能量恢复后再点击' });
+      toast.error('能量不足', { description: '等待能量恢复后再点击', duration: 500 });
       return;
     }
 
@@ -185,6 +185,7 @@ export default function GamePage() {
       hapticFeedback.error();
       toast.error('购买失败', {
         description: result.message,
+        duration: 500,
       });
     }
   };
@@ -196,11 +197,13 @@ export default function GamePage() {
       hapticFeedback.success();
       toast.success('扩容成功！', {
         description: `容量增加了 2 个位置`,
+        duration: 500,
       });
     } else {
       hapticFeedback.error();
       toast.error('扩容失败', {
         description: result.message,
+        duration: 500,
       });
     }
   };
@@ -210,6 +213,7 @@ export default function GamePage() {
     hapticFeedback.success();
     toast.success('领取成功！', {
       description: '奖励已发放',
+      duration: 500,
     });
   };
 
@@ -316,16 +320,22 @@ export default function GamePage() {
             <Dialog>
               <DialogTrigger asChild>
                 <button 
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 relative"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all hover:scale-105 active:scale-95 relative group"
                   style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    border: '3px solid #5a67d8',
-                    boxShadow: '0 4px 8px rgba(102,126,234,0.4), inset 0 2px 0 rgba(255,255,255,0.5)',
+                    background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    boxShadow: '0 4px 12px rgba(255,107,107,0.4), inset 0 1px 0 rgba(255,255,255,0.4)',
                   }}
                 >
-                  <span className="text-lg font-black text-white">🐕 {gameState.dogs.length}/{gameState.maxDogs}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xl">🐾</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-[10px] font-bold text-white/80 leading-none">容量</span>
+                      <span className="text-sm font-black text-white leading-none">{gameState.dogs.length}/{gameState.maxDogs}</span>
+                    </div>
+                  </div>
                   {gameState.maxDogs < 12 && (
-                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-sm shadow-lg animate-pulse">
+                    <div className="w-5 h-5 rounded-full bg-white/90 flex items-center justify-center text-red-500 font-bold text-xs shadow-md group-hover:scale-110 transition-transform">
                       +
                     </div>
                   )}
@@ -697,7 +707,7 @@ export default function GamePage() {
                   <span className="text-xs font-bold drop-shadow-lg">任务</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[75vh]">
+              <DialogContent className="max-w-md max-h-[65vh]">
                 <TabContent 
                   activeTab="tasks" 
                   gameState={gameState} 
@@ -737,11 +747,13 @@ export default function GamePage() {
                               hapticFeedback.success();
                               toast.success('✅ 容量升级成功！', {
                                 description: `容量增加到 ${gameState.maxDogs + 2} 个`,
+                                duration: 500,
                               });
                             } else {
                               hapticFeedback.error();
                               toast.error('升级失败', {
                                 description: result.message,
+                                duration: 500,
                               });
                             }
                           }}
@@ -783,6 +795,7 @@ export default function GamePage() {
                         if (newState) {
                           toast.success('🎉 自动合成已开启！', {
                             description: '系统将每 2 秒自动合成相同等级的狗狗',
+                            duration: 500,
                           });
                         }
                       }}

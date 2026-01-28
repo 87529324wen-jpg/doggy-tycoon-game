@@ -33,9 +33,9 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     const walkInterval = setInterval(() => {
       setPosition((prev) => {
         // 根据当前方向移动
-        const moveDistance = 0.03 + Math.random() * 0.02; // 3%-5% 的移动距离
+        const moveDistance = 0.015 + Math.random() * 0.01; // 1.5%-2.5% 的移动距离，更小更频繁
         const deltaX = direction === 'right' ? moveDistance : -moveDistance;
-        const deltaY = (Math.random() - 0.5) * 0.02; // 轻微上下摇摆
+        const deltaY = (Math.random() - 0.5) * 0.01; // 轻微上下摇摆
         
         // 计算新位置
         let newX = prev.x + deltaX;
@@ -66,7 +66,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         
         return { x: newX, y: newY };
       });
-    }, 2000 + Math.random() * 1000); // 每2-3秒移动一次，更频繁
+    }, 800 + Math.random() * 400); // 每0.8-1.2秒移动一次，更频繁更平滑
 
     return () => clearInterval(walkInterval);
   }, [isDragging, dog.id, onDragEnd, direction, containerRef]);
@@ -222,7 +222,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         transform: `translate(-50%, -50%) ${direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`, // 左右镜像
         touchAction: 'none',
         willChange: isDragging ? 'transform' : 'auto',
-        transition: isDragging ? 'none' : 'all 0.3s ease-out',
+        transition: isDragging ? 'none' : 'all 0.8s ease-in-out',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
