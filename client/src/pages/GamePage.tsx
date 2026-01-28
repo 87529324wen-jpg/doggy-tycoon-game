@@ -14,6 +14,7 @@ import { PoopIcon } from '@/components/PoopIcon';
 import { ComboDisplay, CriticalHit } from '@/components/ComboDisplay';
 import { ParticleEffect } from '@/components/ParticleEffect';
 import { UnlockCelebration } from '@/components/UnlockCelebration';
+import { TabContent } from '@/components/TabContent';
 import { formatNumber } from '@/lib/formatNumber';
 
 export default function GamePage() {
