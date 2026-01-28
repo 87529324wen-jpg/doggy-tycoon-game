@@ -658,7 +658,7 @@ export default function GamePage() {
                           </div>
                         );
                       });
-                    })()
+                    })()}
                   </div>
                 </ScrollArea>
               </DialogContent>
