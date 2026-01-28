@@ -7,12 +7,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { getDogBreed, DOG_BREEDS, isUnlocked } from '@/config/dogConfig';
-import { ShoppingCart, Zap, TrendingUp, Settings, Home, Gift, Trophy } from 'lucide-react';
+import { ShoppingCart, Zap, TrendingUp, Settings, Home, Gift, Trophy, X, CheckCircle2, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PoopAnimation } from '@/components/PoopAnimation';
 import { PoopIcon } from '@/components/PoopIcon';
 import { ComboDisplay, CriticalHit } from '@/components/ComboDisplay';
 import { ParticleEffect } from '@/components/ParticleEffect';
+import { UnlockCelebration } from '@/components/UnlockCelebration';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +26,8 @@ export default function GamePage() {
   const [comboPosition, setComboPosition] = useState({ x: 0, y: 0 });
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [criticalHits, setCriticalHits] = useState<Array<{ id: number; x: number; y: number; multiplier: number }>>([]);
+  const [unlockCelebration, setUnlockCelebration] = useState<{ dogName: string; dogImage: string; dogLevel: number } | null>(null);
+  const [activeTab, setActiveTab] = useState<'home' | 'shop' | 'tasks' | 'settings'>('home');
   const comboTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { hapticFeedback, user } = useTelegram();
   const {
@@ -158,10 +161,11 @@ export default function GamePage() {
         const isNewUnlock = !previousUnlockedLevels.includes(mergedDog.level);
         
         if (isNewUnlock) {
-          // 首次解锁，显示特殊提示
-          toast.success('🎉 恭喜解锁新狗狗！', {
-            description: `您解锁了 ${breed.name}！\n${breed.description}`,
-            duration: 5000,
+          // 首次解锁，显示庆祝弹窗
+          setUnlockCelebration({
+            dogName: breed.name,
+            dogImage: breed.image,
+            dogLevel: breed.level,
           });
         }
         // 移除普通合成提示
@@ -569,46 +573,74 @@ export default function GamePage() {
                 </DialogHeader>
                 <ScrollArea className="h-[60vh] pr-4">
                   <div className="space-y-3">
-                    {DOG_BREEDS.filter(breed => gameState.unlockedLevels.includes(breed.level)).map((breed) => {
-                      const canAfford = gameState.coins >= breed.purchasePrice;
-                      const canBuy = canAfford && gameState.dogs.length < gameState.maxDogs;
-
-                      return (
-                        <div
-                          key={breed.id}
-                          className="flex items-center gap-3 p-3 rounded-lg border-2 bg-white border-amber-200"
-                        >
-                          <img
-                            src={breed.image}
-                            alt={breed.name}
-                            className="w-16 h-16 object-contain"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-gray-800">{breed.name}</span>
-                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                                Lv.{breed.level}
-                              </span>
-                            </div>
-                            <div className="text-xs text-gray-600 mb-1">
-                              产出: {breed.baseProduction}/点击
-                            </div>
-                            <div className="flex items-center gap-1 text-sm font-semibold text-amber-700">
-                              <span>💩</span>
-                              <span>{breed.purchasePrice.toLocaleString()}</span>
-                            </div>
-
-                          </div>
-                          <Button
-                            size="sm"
-                            disabled={!canBuy}
-                            onClick={() => handleBuyDog(breed.level)}
-                          >
-                            购买
-                          </Button>
-                        </div>
+                    {(() => {
+                      // 获取已解锁的狗 + 下一个待解锁的狗
+                      const maxUnlockedLevel = Math.max(...gameState.unlockedLevels);
+                      const nextLockLevel = maxUnlockedLevel + 1;
+                      const displayBreeds = DOG_BREEDS.filter(breed => 
+                        gameState.unlockedLevels.includes(breed.level) || breed.level === nextLockLevel
                       );
-                    })}
+                      
+                      return displayBreeds.map((breed) => {
+                        const isUnlocked = gameState.unlockedLevels.includes(breed.level);
+                        const canAfford = gameState.coins >= breed.purchasePrice;
+                        const canBuy = isUnlocked && canAfford && gameState.dogs.length < gameState.maxDogs;
+
+                        return (
+                          <div
+                            key={breed.id}
+                            className={`flex items-center gap-3 p-3 rounded-lg border-2 ${
+                              isUnlocked ? 'bg-white border-amber-200' : 'bg-gray-50 border-gray-300 opacity-75'
+                            }`}
+                          >
+                            <img
+                              src={breed.image}
+                              alt={breed.name}
+                              className="w-16 h-16 object-contain"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold text-gray-800">{breed.name}</span>
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                                  Lv.{breed.level}
+                                </span>
+                                {!isUnlocked && (
+                                  <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">
+                                    🔒 未解锁
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-600 mb-1">
+                                产出: {breed.baseProduction}/点击
+                              </div>
+                              {isUnlocked ? (
+                                <div className="flex items-center gap-1 text-sm font-semibold text-amber-700">
+                                  <span>💩</span>
+                                  <span>{breed.purchasePrice.toLocaleString()}</span>
+                                </div>
+                              ) : (
+                                <div className="text-xs text-gray-500">
+                                  通过合成解锁
+                                </div>
+                              )}
+                            </div>
+                            {isUnlocked ? (
+                              <Button
+                                size="sm"
+                                disabled={!canBuy}
+                                onClick={() => handleBuyDog(breed.level)}
+                              >
+                                购买
+                              </Button>
+                            ) : (
+                              <div className="text-xs text-gray-400 px-3">
+                                合成解锁
+                              </div>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </ScrollArea>
               </DialogContent>
@@ -769,26 +801,23 @@ export default function GamePage() {
                     </div>
                   </div>
 
-                  {/* 游戏统计 */}
-                  <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-200">
-                    <div className="font-bold text-lg mb-2">📊 游戏统计</div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="text-center p-2 bg-white rounded-lg">
-                        <div className="text-2xl font-bold text-purple-600">{gameState.dogs.length}</div>
-                        <div className="text-gray-600">狗狗数量</div>
-                      </div>
-                      <div className="text-center p-2 bg-white rounded-lg">
-                        <div className="text-2xl font-bold text-orange-600">{Math.floor(gameState.coins).toLocaleString()}</div>
-                        <div className="text-gray-600">总便便数</div>
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
               </DialogContent>
             </Dialog>
           </div>
         </div>
       </div>
+
+      {/* 解锁庆祝弹窗 */}
+      {unlockCelebration && (
+        <UnlockCelebration
+          dogName={unlockCelebration.dogName}
+          dogImage={unlockCelebration.dogImage}
+          dogLevel={unlockCelebration.dogLevel}
+          onClose={() => setUnlockCelebration(null)}
+        />
+      )}
 
       <style>{`
         @keyframes float-up {

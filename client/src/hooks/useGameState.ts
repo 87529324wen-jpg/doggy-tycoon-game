@@ -20,6 +20,13 @@ export interface GameState {
   autoMergeEnabled: boolean;
   lastSaveTime: number;
   unlockedLevels: number[]; // 已解锁的狗狗等级
+  taskStats: {
+    totalClicks: number;
+    totalCoinsCollected: number;
+    totalMerges: number;
+    lastDailyReset: number; // 每日任务重置时间
+  };
+  completedTasks: string[]; // 已完成的任务ID
 }
 
 const getStorageKey = (userId?: number) => {
@@ -42,6 +49,13 @@ export function useGameState() {
     autoMergeEnabled: false,
     lastSaveTime: Date.now(),
     unlockedLevels: [1], // 默认解锁 Level 1
+    taskStats: {
+      totalClicks: 0,
+      totalCoinsCollected: 0,
+      totalMerges: 0,
+      lastDailyReset: Date.now(),
+    },
+    completedTasks: [],
   });
 
   const productionIntervalRef = useRef<number | undefined>(undefined);
@@ -76,6 +90,21 @@ export function useGameState() {
               loadedState.unlockedLevels = [...new Set([1, ...dogLevels])].sort((a, b) => a - b);
             }
             console.log('🔧 Added unlockedLevels for old save:', loadedState.unlockedLevels);
+          }
+          
+          // 为旧存档添加任务统计默认值
+          if (!loadedState.taskStats) {
+            loadedState.taskStats = {
+              totalClicks: 0,
+              totalCoinsCollected: 0,
+              totalMerges: 0,
+              lastDailyReset: Date.now(),
+            };
+            console.log('🔧 Added taskStats for old save');
+          }
+          if (!loadedState.completedTasks) {
+            loadedState.completedTasks = [];
+            console.log('🔧 Added completedTasks for old save');
           }
           
           setGameState(loadedState);
@@ -294,6 +323,10 @@ export function useGameState() {
         dogs: newDogs,
         userLevel: newUserLevel,
         unlockedLevels: newUnlockedLevels,
+        taskStats: {
+          ...prev.taskStats,
+          totalMerges: prev.taskStats.totalMerges + 1,
+        },
       };
     });
 
@@ -389,6 +422,11 @@ export function useGameState() {
     setGameState(prev => ({
       ...prev,
       coins: prev.coins + amount,
+      taskStats: {
+        ...prev.taskStats,
+        totalClicks: prev.taskStats.totalClicks + 1,
+        totalCoinsCollected: prev.taskStats.totalCoinsCollected + amount,
+      },
     }));
   }, []);
 
