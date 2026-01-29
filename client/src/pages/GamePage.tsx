@@ -19,11 +19,13 @@ import { TabContent } from '@/components/TabContent';
 import { DAILY_TASKS, ACHIEVEMENT_TASKS } from '@/config/taskConfig';
 import { GAME_VERSION, BUILD_DATE } from '@/config/version';
 import { formatNumber } from '@/lib/formatNumber';
+import { preloadDogImages } from '@/utils/imagePreloader';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [shopOpen, setShopOpen] = useState(false);
   const [tasksOpen, setTasksOpen] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const [energy, setEnergy] = useState(100);
   const [maxEnergy] = useState(100);
   const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([]);
@@ -47,6 +49,13 @@ export default function GamePage() {
     calculateProduction,
     addCoins,
   } = useGameState();
+
+  // 预加载狗狗图片
+  useEffect(() => {
+    preloadDogImages(20).then(() => {
+      setImagesLoaded(true);
+    });
+  }, []);
 
   // 能量恢复系统
   useEffect(() => {

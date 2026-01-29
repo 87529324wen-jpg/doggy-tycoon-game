@@ -15,17 +15,12 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: dog.x, y: dog.y });
   const [direction, setDirection] = useState<'left' | 'right'>('right');
-  const [walkFrame, setWalkFrame] = useState(0); // 溢达方向
   const dragStartPos = useRef({ x: 0, y: 0 });
   const dragOffset = useRef({ x: 0, y: 0 });
   const breed = getDogBreed(dog.level);
   
-  const walkFrames = [
-    '/images/dog-walk-frame2.png',
-    '/images/dog-walk-frame3-v2.png',
-    '/images/dog-walk-frame2.png',
-    '/images/dog-walk-frame4-v2.png',
-  ];
+  // 使用狗狗品种图片
+  const dogImage = breed.image;
 
   // 同步外部位置更新（但不在拖拽时）
   useEffect(() => {
@@ -41,8 +36,6 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     const walkInterval = setInterval(() => {
       setIsWalking(true);
       setTimeout(() => setIsWalking(false), 700);
-      
-      setWalkFrame(prev => (prev + 1) % 4); // 走路动画持续0.7秒
       setPosition((prev) => {
         // 根据当前方向移动
         const moveDistance = 0.015 + Math.random() * 0.01; // 1.5%-2.5% 的移动距离，更小更频繁
@@ -232,10 +225,12 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
       style={{
         left: `${position.x * 100}%`,
         top: `${position.y * 100}%`,
-        transform: 'translate(-50%, -50%)',
+        transform: 'translate3d(-50%, -50%, 0)',
         touchAction: 'none',
         willChange: isDragging ? 'transform' : 'auto',
-        transition: isDragging ? 'none' : 'all 0.8s ease-in-out',
+        transition: isDragging ? 'none' : 'transform 0.8s ease-in-out',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -243,13 +238,18 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     >
       <div className="relative" onClick={handleClick}>
         <img
-          src={isWalking ? walkFrames[walkFrame] : walkFrames[0]}
+          src={dogImage}
           alt={breed.name}
+          loading="lazy"
+          decoding="async"
           className="w-24 h-24 sm:w-28 sm:h-28 object-contain pointer-events-none select-none"
           draggable={false}
           style={{
             transform: direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
-            transition: 'none',
+            transition: 'transform 0.3s ease-out',
+            imageRendering: 'auto',
+            backgroundColor: 'transparent',
+            willChange: 'transform',
           }}
         />
         <div 
