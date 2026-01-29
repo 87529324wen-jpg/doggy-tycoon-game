@@ -714,7 +714,7 @@ export default function GamePage() {
                   <span className="text-xs font-bold drop-shadow-lg">任务</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-md w-[90vw] p-0 gap-0 max-h-[50vh]">
+              <DialogContent className="max-w-md w-[90vw] p-0 gap-0 max-h-[70vh] mb-20">
                 <div className="h-full overflow-y-auto pb-4">
                   <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
                     <div className="space-y-6">
