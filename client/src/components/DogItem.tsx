@@ -15,6 +15,8 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: dog.x, y: dog.y });
   const [direction, setDirection] = useState<'left' | 'right'>('right');
+  const [miningProgress, setMiningProgress] = useState(0);
+  const [isMining, setIsMining] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const dragOffset = useRef({ x: 0, y: 0 });
   const breed = getDogBreed(dog.level);
@@ -28,6 +30,43 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
       setPosition({ x: dog.x, y: dog.y });
     }
   }, [dog.x, dog.y, isDragging]);
+
+  // 自动挖矿系统
+  useEffect(() => {
+    if (isDragging) return;
+
+    // 挖矿速度根据狗狗等级，等级越高速度越快
+    const miningSpeed = 100 / (5 - dog.level * 0.1); // 5秒到3秒不等
+    
+    const miningInterval = setInterval(() => {
+      setMiningProgress(prev => {
+        if (prev >= 100) {
+          // 挖矿完成，触发产出
+          setIsMining(true);
+          setTimeout(() => setIsMining(false), 500);
+          
+          // 计算产出金币数量（等级越高产出越多）
+          const miningReward = Math.floor(dog.level * (1 + Math.random() * 0.5));
+          
+          // 触发点击事件来产出金币
+          if (onClick) {
+            const container = containerRef.current;
+            if (container) {
+              const rect = container.getBoundingClientRect();
+              const x = rect.left + position.x * rect.width;
+              const y = rect.top + position.y * rect.height;
+              onClick(x, y);
+            }
+          }
+          
+          return 0;
+        }
+        return prev + 2;
+      });
+    }, miningSpeed);
+
+    return () => clearInterval(miningInterval);
+  }, [isDragging, dog.level, position, onClick, containerRef]);
 
   // 狗狗自动溢达（左右来回走）
   useEffect(() => {
@@ -260,6 +299,26 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
         >
           Lv.{dog.level}
         </div>
+
+        {/* 挖矿进度条 */}
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-20">
+          <div className="h-1.5 bg-gray-800/50 rounded-full overflow-hidden backdrop-blur-sm">
+            <div 
+              className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-300"
+              style={{ 
+                width: `${miningProgress}%`,
+                boxShadow: miningProgress > 0 ? '0 0 8px rgba(251, 191, 36, 0.8)' : 'none',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* 挖矿中的视觉效果 */}
+        {isMining && (
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce">
+            <span className="text-2xl">⛏️</span>
+          </div>
+        )}
       </div>
     </div>
   );
