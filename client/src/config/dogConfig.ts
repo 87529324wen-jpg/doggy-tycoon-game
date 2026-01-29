@@ -13,29 +13,41 @@ export interface DogBreed {
   unlockLevel: number; // 解锁等级（用户等级）
 }
 
-// 狗狗品种列表 - 20种特色狗狗（使用AI生成的高质量图片）
-export const DOG_BREEDS: DogBreed[] = [
-  { id: 1, name: '吉娃娃', image: '/images/dog-1.png', level: 1, baseProduction: 1, purchasePrice: 10, unlockLevel: 0 },
-  { id: 2, name: '柯基', image: '/images/dog-2.png', level: 2, baseProduction: 3, purchasePrice: 50, unlockLevel: 0 },
-  { id: 3, name: '柴犬', image: '/images/dog-3.png', level: 3, baseProduction: 8, purchasePrice: 200, unlockLevel: 0 },
-  { id: 4, name: '比格犬', image: '/images/dog-4.png', level: 4, baseProduction: 20, purchasePrice: 800, unlockLevel: 0 },
-  { id: 5, name: '博美', image: '/images/dog-5.png', level: 5, baseProduction: 50, purchasePrice: 3000, unlockLevel: 4 },
-  { id: 6, name: '金毛', image: '/images/dog-6.png', level: 6, baseProduction: 120, purchasePrice: 12000, unlockLevel: 5 },
-  { id: 7, name: '哈士奇', image: '/images/dog-7.png', level: 7, baseProduction: 300, purchasePrice: 50000, unlockLevel: 6 },
-  { id: 8, name: '斑点狗', image: '/images/dog-8.png', level: 8, baseProduction: 700, purchasePrice: 200000, unlockLevel: 7 },
-  { id: 9, name: '圣伯纳', image: '/images/dog-9.png', level: 9, baseProduction: 1500, purchasePrice: 800000, unlockLevel: 8 },
-  { id: 10, name: '传说神犬', image: '/images/dog-10.png', level: 10, baseProduction: 3500, purchasePrice: 3000000, unlockLevel: 9 },
-  { id: 11, name: '铃铛狗', image: '/images/dog-11.png', level: 11, baseProduction: 8000, purchasePrice: 12000000, unlockLevel: 10 },
-  { id: 12, name: '墨镜狗', image: '/images/dog-12.png', level: 12, baseProduction: 18000, purchasePrice: 50000000, unlockLevel: 11 },
-  { id: 13, name: '忍者狗', image: '/images/dog-13.png', level: 13, baseProduction: 40000, purchasePrice: 200000000, unlockLevel: 12 },
-  { id: 14, name: '蝙蝠侠狗', image: '/images/dog-14.png', level: 14, baseProduction: 90000, purchasePrice: 800000000, unlockLevel: 13 },
-  { id: 15, name: '超人狗', image: '/images/dog-15.png', level: 15, baseProduction: 200000, purchasePrice: 3000000000, unlockLevel: 14 },
-  { id: 16, name: '变形金刚狗', image: '/images/dog-16.png', level: 16, baseProduction: 450000, purchasePrice: 12000000000, unlockLevel: 15 },
-  { id: 17, name: '魔法狗', image: '/images/dog-17.png', level: 17, baseProduction: 1000000, purchasePrice: 50000000000, unlockLevel: 16 },
-  { id: 18, name: '国王狗', image: '/images/dog-18.png', level: 18, baseProduction: 2200000, purchasePrice: 200000000000, unlockLevel: 17 },
-  { id: 19, name: '宇航员狗', image: '/images/dog-19.png', level: 19, baseProduction: 5000000, purchasePrice: 800000000000, unlockLevel: 18 },
-  { id: 20, name: '海盗狗', image: '/images/dog-20.png', level: 20, baseProduction: 11000000, purchasePrice: 3000000000000, unlockLevel: 19 },
+// 狗狗名称和图片配置
+const DOG_NAMES = [
+  '吉娃娃', '柯基', '柴犬 (Doge)', '比格犬', '博美',
+  '金毛', '哈士奇', '斑点狗', '圣伯纳', '传说神犬',
+  '铃铛狗', '墨镜狗', '忍者狗', '蝙蝠侠狗', '超人狗',
+  '变形金刚狗', '魔法狗', '国王狗', '宇航员狗', '海盗狗',
 ];
+
+// 数值生成公式（基于研究的最佳实践）
+function generateDogStats(level: number) {
+  // 产出公式：base * (2.5 ^ (level - 1))
+  const baseProduction = Math.floor(1 * Math.pow(2.5, level - 1));
+  
+  // 成本公式：baseCost * (4 ^ (level - 1))
+  const purchasePrice = Math.floor(10 * Math.pow(4, level - 1));
+  
+  // 解锁等级：每级需要前一级的经验
+  const unlockLevel = Math.max(0, level - 1);
+  
+  return { baseProduction, purchasePrice, unlockLevel };
+}
+
+// 生成所有狗狗品种（公式化）
+export const DOG_BREEDS: DogBreed[] = Array.from({ length: 20 }, (_, index) => {
+  const level = index + 1;
+  const stats = generateDogStats(level);
+  
+  return {
+    id: level,
+    name: DOG_NAMES[index],
+    image: `/images/dog-${level}.png`,
+    level,
+    ...stats,
+  };
+});
 
 // 获取狗狗品种信息
 export function getDogBreed(level: number): DogBreed {
