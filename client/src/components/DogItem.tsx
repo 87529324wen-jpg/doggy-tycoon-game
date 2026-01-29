@@ -31,7 +31,7 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     }
   }, [dog.x, dog.y, isDragging]);
 
-  // 自动挖矿系统
+  // 自动挖矿系统（只显示进度条，不自动产出）
   useEffect(() => {
     if (isDragging) return;
 
@@ -41,32 +41,17 @@ export function DogItem({ dog, onDragStart, onDragEnd, onMergeAttempt, container
     const miningInterval = setInterval(() => {
       setMiningProgress(prev => {
         if (prev >= 100) {
-          // 挖矿完成，触发产出
+          // 挖矿完成，显示视觉效果，但不自动产出
           setIsMining(true);
           setTimeout(() => setIsMining(false), 500);
-          
-          // 计算产出金币数量（等级越高产出越多）
-          const miningReward = Math.floor(dog.level * (1 + Math.random() * 0.5));
-          
-          // 触发点击事件来产出金币
-          if (onClick) {
-            const container = containerRef.current;
-            if (container) {
-              const rect = container.getBoundingClientRect();
-              const x = rect.left + position.x * rect.width;
-              const y = rect.top + position.y * rect.height;
-              onClick(x, y);
-            }
-          }
-          
-          return 0;
+          return 0; // 重置进度
         }
         return prev + 2;
       });
     }, miningSpeed);
 
     return () => clearInterval(miningInterval);
-  }, [isDragging, dog.level, position, onClick, containerRef]);
+  }, [isDragging, dog.level]);
 
   // 狗狗自动溢达（左右来回走）
   useEffect(() => {

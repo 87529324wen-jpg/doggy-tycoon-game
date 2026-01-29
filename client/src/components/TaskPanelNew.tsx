@@ -29,7 +29,7 @@ export function TaskPanelNew({ dailyTasks, achievementTasks, onClaimTask }: Task
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       {/* 头部 */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b-2 border-purple-200 p-4 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b-2 border-purple-200 p-4 pr-12 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
             <span className="text-2xl">📅</span>
